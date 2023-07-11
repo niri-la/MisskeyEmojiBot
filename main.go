@@ -12,11 +12,11 @@ import (
 
 // Bot parameters
 var (
-	GuildID               = flag.String("guild", "1080833190488453140", "Test guild ID")
-	BotToken              = flag.String("token", "MTEyNzA5ODMyMzQzNDc0MTg3MQ.GxPh8_.bUzdMmxjaHCcge8aP2SXzf3yLEL-74khshCU-Y", "Bot access token")
-	AppID                 = flag.String("app", "1127098323434741871", "Application ID")
-	ModeratorID           = flag.String("moderation", "1097163290393710715", "Moderation ID")
-	BotID                 = flag.String("botID", "1128051041670275223", "Bot ID")
+	GuildID               = flag.String("guild", "", "Test guild ID")
+	BotToken              = flag.String("token", "", "Bot access token")
+	AppID                 = flag.String("app", "", "Application ID")
+	ModeratorID           = flag.String("moderation", "", "Moderation ID")
+	BotID                 = flag.String("botID", "", "Bot ID")
 	ModerationChannelName = flag.String("moderationChannelName", "emoji-moderation", "moderation Channel Name")
 )
 
