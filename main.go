@@ -7,17 +7,21 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 )
 
 // Bot parameters
 var (
-	GuildID      = flag.String("guild", "", "Test guild ID")
-	BotToken     = flag.String("token", "", "Bot access token")
-	AppID        = flag.String("app", "", "Application ID")
-	ModerationID = flag.String("moderation", "", "Moderation ID")
+	GuildID               = flag.String("guild", "1080833190488453140", "Test guild ID")
+	BotToken              = flag.String("token", "MTEyNzA5ODMyMzQzNDc0MTg3MQ.GxPh8_.bUzdMmxjaHCcge8aP2SXzf3yLEL-74khshCU-Y", "Bot access token")
+	AppID                 = flag.String("app", "1127098323434741871", "Application ID")
+	ModeratorID           = flag.String("moderation", "1097163290393710715", "Moderation ID")
+	BotID                 = flag.String("botID", "1128051041670275223", "Bot ID")
+	ModerationChannelName = flag.String("moderationChannelName", "emoji-moderation", "moderation Channel Name")
 )
 
 var s *discordgo.Session
+var moderationChannel *discordgo.Channel
 
 func init() { flag.Parse() }
 
@@ -27,6 +31,8 @@ func init() {
 	if err != nil {
 		log.Fatalf("Invalid bot parameters: %v", err)
 	}
+
+	moderationChannel, err = findChannelByName(s, *GuildID, *ModerationChannelName)
 }
 
 func main() {
@@ -62,14 +68,16 @@ func main() {
 		emoji, err := GetEmoji(channel.Name[6:])
 
 		if err != nil {
-			s.ChannelMessageSend(m.ChannelID, "新たな申請のRequestに失敗しました。管理者に問い合わせを行ってください。")
-			fmt.Println("[ERROR] Reason : emoji not found")
+			//s.ChannelMessageSend(m.ChannelID, "新たな申請のRequestに失敗しました。管理者に問い合わせを行ってください。")
+			//fmt.Println("[ERROR] Reason : emoji not found")
 			return
 		}
 
-		RunEmojiProcess(emoji, s, m)
+		runEmojiProcess(emoji, s, m)
 
 	})
+
+	s.AddHandler(emojiModerationReaction)
 
 	_, err := s.ApplicationCommandCreate(*AppID, *GuildID, &discordgo.ApplicationCommand{
 		Name:        "buttons",
@@ -92,8 +100,24 @@ func main() {
 	log.Println("Graceful shutdown")
 }
 
+func findChannelByName(s *discordgo.Session, guildID string, name string) (*discordgo.Channel, error) {
+	channels, err := s.GuildChannels(guildID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, ch := range channels {
+		if ch.Name == name {
+			return ch, nil
+		}
+	}
+
+	return nil, fmt.Errorf("channel not found")
+}
+
 func register() {
 
+	// ni_rilana
 	addCommand(
 		&discordgo.ApplicationCommand{
 			Name:        "ni_rilana",
@@ -103,6 +127,7 @@ func register() {
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
+					Flags: discordgo.MessageFlagsEphemeral,
 					Content: "What is this ? \n" +
 						": Misskey Emoji Bot\n" +
 						": Created by ni_rila (KineL)\n" +
@@ -112,6 +137,7 @@ func register() {
 		},
 	)
 
+	// init
 	addCommand(
 		&discordgo.ApplicationCommand{
 			Name:        "init",
@@ -141,6 +167,7 @@ func register() {
 		},
 	)
 
+	// init_channel
 	addComponent(
 		&discordgo.ApplicationCommand{
 			Name: "init_channel",
@@ -175,9 +202,53 @@ func register() {
 					},
 				},
 			)
+
+			overwrites := []*discordgo.PermissionOverwrite{
+				{
+					ID:   *ModeratorID,
+					Type: discordgo.PermissionOverwriteTypeRole,
+					Allow: discordgo.PermissionViewChannel |
+						discordgo.PermissionSendMessages,
+				},
+				{
+					ID:   *BotID,
+					Type: discordgo.PermissionOverwriteTypeRole,
+					Allow: discordgo.PermissionViewChannel |
+						discordgo.PermissionSendMessages,
+				},
+				{
+					ID:   i.GuildID,
+					Type: discordgo.PermissionOverwriteTypeRole,
+					Deny: discordgo.PermissionViewChannel,
+				},
+			}
+
+			parent, err := s.Channel(i.ChannelID)
+
+			if err != nil {
+				returnFailedMessage(s, i, "Could not retrieve channel")
+				return
+			}
+
+			channel, err := s.GuildChannelCreateComplex(*GuildID, discordgo.GuildChannelCreateData{
+				Type:                 discordgo.ChannelTypeGuildText,
+				Name:                 *ModerationChannelName,
+				ParentID:             parent.ParentID,
+				PermissionOverwrites: overwrites,
+			})
+
+			s.ChannelMessageSend(
+				channel.ID,
+				": モデレーション用チャンネルです。\nここに各種申請のスレッドが生成されます。",
+			)
+
+			returnFailedMessage(s, i, "Could not create emoji channel")
+			return
+
 		},
 	)
 
+	// nsfw_yes
 	addComponent(
 		&discordgo.ApplicationCommand{
 			Name: "nsfw_yes",
@@ -199,11 +270,13 @@ func register() {
 					Content: "NSFWに設定されました\n",
 				},
 			})
-			emoji.NSFW = true
-			emoji.State = 4
+			emoji.IsSensitive = true
+			emoji.State = 5
 			emojiLastConfirmation(emoji, s, i.ChannelID)
 		},
 	)
+
+	// nsfw_no
 	addComponent(
 		&discordgo.ApplicationCommand{
 			Name: "nsfw_no",
@@ -225,13 +298,149 @@ func register() {
 				},
 			})
 
-			emoji.NSFW = false
-			emoji.State = 4
+			emoji.IsSensitive = false
+			emoji.State = 5
 			emojiLastConfirmation(emoji, s, i.ChannelID)
 
 		},
 	)
 
+	// emoji_request
+	addComponent(
+		&discordgo.ApplicationCommand{
+			Name: "emoji_request",
+		},
+		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			channel, _ := s.Channel(i.ChannelID)
+			emoji, err := GetEmoji(channel.Name[6:])
+			if err != nil {
+				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Flags:   discordgo.MessageFlagsEphemeral,
+						Content: "設定に失敗しました。管理者に問い合わせを行ってください。\n",
+					},
+				})
+			}
+
+			if emoji.IsRequested {
+				s.ChannelMessageSend(
+					channel.ID,
+					"既に申請していますよ！\n",
+				)
+				return
+			}
+
+			s.ChannelMessageSend(
+				channel.ID,
+				"申請をしました！\n"+
+					"なお、申請結果についてはこちらではお伝えできかねますのでご了承ください。\n"+
+					"詳細な申請内容については管理者へお問い合わせください！\n"+
+					"この度は申請いただき大変ありがとうございました。\n",
+			)
+
+			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Flags:   discordgo.MessageFlagsEphemeral,
+					Content: "😎",
+				},
+			})
+
+			emoji.IsRequested = true
+
+			send, err := s.ChannelMessageSend(moderationChannel.ID, ":作成者: "+i.Member.User.Username+"\n"+
+				":: ID "+emoji.ID)
+			if err != nil {
+				return
+			}
+
+			thread, err := s.MessageThreadStartComplex(moderationChannel.ID, send.ID, &discordgo.ThreadStart{
+				Name:                emoji.ID,
+				AutoArchiveDuration: 60,
+				Invitable:           false,
+				RateLimitPerUser:    10,
+			})
+
+			s.ChannelMessageSend(thread.ID, ":---\n"+
+				"Requested by "+i.Member.User.Username+"\n"+
+				":---\n")
+			s.ChannelMessageSend(thread.ID,
+				"Name: "+emoji.Name+"\n"+
+					"Category: "+emoji.Category+"\n"+
+					"Tag: "+emoji.Tag+"\n"+
+					"isNSFW: "+strconv.FormatBool(emoji.IsSensitive)+"\n")
+
+			file, err := os.Open(emoji.FilePath)
+			if err != nil {
+				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Flags:   discordgo.MessageFlagsEphemeral,
+						Content: "設定に失敗しました。管理者に問い合わせを行ってください。#01b\n",
+					},
+				})
+				return
+			}
+			defer file.Close()
+
+			lastMessage, err := s.ChannelFileSend(thread.ID, emoji.FilePath, file)
+			if err != nil {
+				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Flags:   discordgo.MessageFlagsEphemeral,
+						Content: "設定に失敗しました。管理者に問い合わせを行ってください。#01d\n",
+					},
+				})
+				return
+			}
+
+			s.MessageReactionAdd(thread.ID, lastMessage.ID, "🆗")
+			s.MessageReactionAdd(thread.ID, lastMessage.ID, "🆖")
+
+		},
+	)
+
+	// emoji_request_retry
+	addComponent(
+		&discordgo.ApplicationCommand{
+			Name: "emoji_request_retry",
+		},
+		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			channel, _ := s.Channel(i.ChannelID)
+			emoji, err := GetEmoji(channel.Name[6:])
+			if err != nil {
+				s.ChannelMessageSend(
+					channel.ID,
+					"設定に失敗しました。管理者に問い合わせを行ってください。 #04a\n",
+				)
+			}
+
+			if emoji.IsRequested {
+				s.ChannelMessageSend(
+					channel.ID,
+					"既に絵文字は申請されています。新たな申請を作成してください。\n",
+				)
+				return
+			}
+
+			emoji.IsSensitive = false
+			emoji.State = 0
+
+			deleteEmoji(emoji.FilePath)
+
+			s.ChannelMessageSend(
+				channel.ID,
+				"リクエストを初期化します。"+
+					":---\n"+
+					"1. 絵文字の名前について教えてください 例: 絵文字では`:emoji-name:`となりますが、この時の`emoji-name`を入力してください \n",
+			)
+
+		},
+	)
+
+	// new_emoji_channel
 	addComponent(
 		&discordgo.ApplicationCommand{
 			Name: "new_emoji_channel",
@@ -254,7 +463,13 @@ func register() {
 						discordgo.PermissionSendMessages,
 				},
 				{
-					ID:   *ModerationID,
+					ID:   *ModeratorID,
+					Type: discordgo.PermissionOverwriteTypeRole,
+					Allow: discordgo.PermissionViewChannel |
+						discordgo.PermissionSendMessages,
+				},
+				{
+					ID:   *BotID,
 					Type: discordgo.PermissionOverwriteTypeRole,
 					Allow: discordgo.PermissionViewChannel |
 						discordgo.PermissionSendMessages,
@@ -284,7 +499,7 @@ func register() {
 
 			s.ChannelMessageSend(
 				channel.ID,
-				"1. まず絵文字の名前について教えてください 例: 絵文字では`:emoji-name:`となりますが、この時の`emoji-name`を入力してください \n",
+				"1. 絵文字の名前について教えてください 例: 絵文字では`:emoji-name:`となりますが、この時の`emoji-name`を入力してください \n",
 			)
 
 			if err != nil {
@@ -302,7 +517,6 @@ func register() {
 
 		},
 	)
-
 	registeredCommands := make([]*discordgo.ApplicationCommand, len(Commands))
 	for i, v := range Commands {
 		cmd, err := s.ApplicationCommandCreate(*AppID, *GuildID, v)
@@ -312,7 +526,6 @@ func register() {
 		}
 		registeredCommands[i] = cmd
 	}
-
 }
 
 func returnFailedMessage(s *discordgo.Session, i *discordgo.InteractionCreate, reason string) {
