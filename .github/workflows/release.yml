@@ -15,32 +15,30 @@ jobs:
 
       - name: Extract tag name
         shell: bash
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        run: echo "RELEASE_VERSION=${GITHUB_REF##*/v}" >> $GITHUB_ENV
 
       - name: Extract release notes
         id: release_notes
         run: |
-          RELEASE_NOTES=""
+          RELEASE_NOTES="## Version ""$RELEASE_VERSION"$'\n'
           CURRENT_LINE=0
           while IFS= read -r line; do
+            if [[ "$CURRENT_LINE" == 1 ]]; then
+              RELEASE_NOTES="$RELEASE_NOTES"$'\n'"$line"
+            fi
             if [[ "$line" == "## [$RELEASE_VERSION] - "* ]]; then
               CURRENT_LINE=1
             elif [[ "$CURRENT_LINE" == 1 && "$line" == "## ["* ]]; then
               CURRENT_LINE=0
             fi
-            if [[ "$CURRENT_LINE" == 1 ]]; then
-              RELEASE_NOTES="$RELEASE_NOTES"$'\n'"$line"
-            fi
           done < "CHANGELOG.md"
-          RELEASE_NOTES="${RELEASE_NOTES:2}"
-          echo "::set-output name=body::$RELEASE_NOTES"
-          echo "$RELEASE_NOTES"
+          echo "$RELEASE_NOTES" > release_notes_diff.txt
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.RELEASE_VERSION }}
-          release_name: v${{ env.RELEASE_VERSION }}
-          body: ${{ steps.release_notes.outputs.body }}
+          tag_name: v${{ env.RELEASE_VERSION }}
+          name: v${{ env.RELEASE_VERSION }}
+          body_path: ${{ github.workspace }}/release_notes_diff.txt
