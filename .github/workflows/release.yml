@@ -22,7 +22,7 @@ jobs:
         run: |
           RELEASE_NOTES=""
           CURRENT_LINE=0
-          while IFS = read -r line; do
+          while IFS= read -r line; do
             if [[ "$line" == "## [$RELEASE_VERSION] - "* ]]; then
               CURRENT_LINE=1
             elif [[ "$CURRENT_LINE" == 1 && "$line" == "## ["* ]]; then
