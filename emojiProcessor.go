@@ -205,7 +205,7 @@ func emojiModerationReaction(s *discordgo.Session, m *discordgo.MessageReactionA
 		return
 	}
 
-	roleCount, err := countMembersWithRole(s, *GuildID, *ModeratorID)
+	roleCount, err := countMembersWithRole(s, GuildID, ModeratorID)
 	if err != nil {
 		fmt.Println("fatal error. check moderation ID")
 		return
