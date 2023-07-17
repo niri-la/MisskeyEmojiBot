@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - "*"
-  workflow_dispatch: 
+  workflow_dispatch:
 
 jobs:
   build:
@@ -22,7 +22,7 @@ jobs:
         run: |
           RELEASE_NOTES=""
           CURRENT_LINE=0
-          while IFS= read -r line; do
+          while IFS = read -r line; do
             if [[ "$line" == "## [$RELEASE_VERSION] - "* ]]; then
               CURRENT_LINE=1
             elif [[ "$CURRENT_LINE" == 1 && "$line" == "## ["* ]]; then
@@ -33,7 +33,7 @@ jobs:
             fi
           done < "CHANGELOG.md"
           RELEASE_NOTES="${RELEASE_NOTES:2}" # 最後の改行を削除
-          echo "::set-output name=body::$RELEASE_NOTES"
+          echo "release_note_body=$RELEASE_NOTES" >> "$GITHUB_ENV"
 
       - name: Create Release
         uses: actions/create-release@v1
@@ -42,4 +42,4 @@ jobs:
         with:
           tag_name: ${{ env.RELEASE_VERSION }}
           release_name: v${{ env.RELEASE_VERSION }}
-          body: ${{ steps.release_notes.outputs.body }}
+          body: ${{ env.release_note_body }}
