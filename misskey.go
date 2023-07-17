@@ -18,7 +18,7 @@ import (
 func uploadToMisskey(e Emoji) bool {
 	client, err := misskey.NewClientWithOptions(
 		misskey.WithAPIToken(misskeyToken),
-		misskey.WithBaseURL("https", misskeyToken, ""),
+		misskey.WithBaseURL("https", misskeyHost, ""),
 		misskey.WithLogLevel(logrus.ErrorLevel),
 	)
 	if err != nil {
