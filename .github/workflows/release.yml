@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "*"
+  workflow_dispatch: 
 
 jobs:
   build:
@@ -21,16 +22,17 @@ jobs:
         run: |
           RELEASE_NOTES=""
           CURRENT_LINE=0
-          while read -r line; do
+          while IFS= read -r line; do
             if [[ "$line" == "## [$RELEASE_VERSION] - "* ]]; then
               CURRENT_LINE=1
             elif [[ "$CURRENT_LINE" == 1 && "$line" == "## ["* ]]; then
               CURRENT_LINE=0
             fi
             if [[ "$CURRENT_LINE" == 1 ]]; then
-              RELEASE_NOTES="$RELEASE_NOTES\n$line"
+              RELEASE_NOTES="$RELEASE_NOTES"$'\n'"$line"
             fi
           done < "CHANGELOG.md"
+          RELEASE_NOTES="${RELEASE_NOTES:2}" # 最後の改行を削除
           echo "::set-output name=body::$RELEASE_NOTES"
 
       - name: Create Release
