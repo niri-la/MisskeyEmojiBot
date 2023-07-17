@@ -15,15 +15,10 @@ import (
 	"strings"
 )
 
-var (
-	misskeyToken = "8yM92x1fk2g6sO9L6m0CYHidZlVej0aB"
-	misskeyUrl   = "misskey.niri.la"
-)
-
 func uploadToMisskey(e Emoji) bool {
 	client, err := misskey.NewClientWithOptions(
 		misskey.WithAPIToken(misskeyToken),
-		misskey.WithBaseURL("https", misskeyUrl, ""),
+		misskey.WithBaseURL("https", misskeyToken, ""),
 		misskey.WithLogLevel(logrus.ErrorLevel),
 	)
 	if err != nil {

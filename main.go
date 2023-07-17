@@ -1,9 +1,9 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
+	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"os/signal"
@@ -12,40 +12,44 @@ import (
 
 // Bot parameters
 var (
-	GuildID               = flag.String("guild", "", "Test guild ID")
-	BotToken              = flag.String("token", "", "Bot access token")
-	AppID                 = flag.String("app", "", "Application ID")
-	ModeratorID           = flag.String("moderation", "", "Moderation ID")
-	BotID                 = flag.String("botID", "", "Bot ID")
-	ModerationChannelName = flag.String("moderationChannelName", "emoji-moderation", "moderation Channel Name")
+	GuildID               string
+	BotToken              string
+	AppID                 string
+	ModeratorID           string
+	BotID                 string
+	ModerationChannelName string
+	misskeyToken          string
+	misskeyHost           string
+	Session               *discordgo.Session
 )
 
-var s *discordgo.Session
 var moderationChannel *discordgo.Channel
 
-func init() { flag.Parse() }
+func init() {
+	loadEnvironments()
+}
 
 func init() {
 	var err error
-	s, err = discordgo.New("Bot " + *BotToken)
+	Session, err = discordgo.New("Bot " + BotToken)
 	if err != nil {
 		log.Fatalf("Invalid bot parameters: %v", err)
 	}
 
-	moderationChannel, err = findChannelByName(s, *GuildID, *ModerationChannelName)
+	moderationChannel, err = findChannelByName(Session, GuildID, ModerationChannelName)
 }
 
 func main() {
 	log.Println("initializing...")
 	// start
-	s.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
+	Session.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
 		log.Println("Bot starting")
 	})
 	log.Println("Command register...")
 	register()
 
 	// コンポーネントはインタラクションの一部なので、InteractionCreateHandlerを登録します。
-	s.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	Session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		switch i.Type {
 		case discordgo.InteractionApplicationCommand:
 			if h, ok := CommandHandlers[i.ApplicationCommandData().Name]; ok {
@@ -58,7 +62,7 @@ func main() {
 		}
 	})
 
-	s.AddHandler(func(s *discordgo.Session, m *discordgo.MessageCreate) {
+	Session.AddHandler(func(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if m.Author.ID == s.State.User.ID {
 			return
 		}
@@ -77,9 +81,9 @@ func main() {
 
 	})
 
-	s.AddHandler(emojiModerationReaction)
+	Session.AddHandler(emojiModerationReaction)
 
-	_, err := s.ApplicationCommandCreate(*AppID, *GuildID, &discordgo.ApplicationCommand{
+	_, err := Session.ApplicationCommandCreate(AppID, GuildID, &discordgo.ApplicationCommand{
 		Name:        "buttons",
 		Description: "Test the buttons if you got courage",
 	})
@@ -88,11 +92,11 @@ func main() {
 		log.Fatalf("Cannot create slash command: %v", err)
 	}
 
-	err = s.Open()
+	err = Session.Open()
 	if err != nil {
 		log.Fatalf("Cannot open the session: %v", err)
 	}
-	defer s.Close()
+	defer Session.Close()
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
@@ -205,13 +209,13 @@ func register() {
 
 			overwrites := []*discordgo.PermissionOverwrite{
 				{
-					ID:   *ModeratorID,
+					ID:   ModeratorID,
 					Type: discordgo.PermissionOverwriteTypeRole,
 					Allow: discordgo.PermissionViewChannel |
 						discordgo.PermissionSendMessages,
 				},
 				{
-					ID:   *BotID,
+					ID:   BotID,
 					Type: discordgo.PermissionOverwriteTypeRole,
 					Allow: discordgo.PermissionViewChannel |
 						discordgo.PermissionSendMessages,
@@ -230,9 +234,9 @@ func register() {
 				return
 			}
 
-			channel, err := s.GuildChannelCreateComplex(*GuildID, discordgo.GuildChannelCreateData{
+			channel, err := s.GuildChannelCreateComplex(GuildID, discordgo.GuildChannelCreateData{
 				Type:                 discordgo.ChannelTypeGuildText,
-				Name:                 *ModerationChannelName,
+				Name:                 ModerationChannelName,
 				ParentID:             parent.ParentID,
 				PermissionOverwrites: overwrites,
 			})
@@ -463,13 +467,13 @@ func register() {
 						discordgo.PermissionSendMessages,
 				},
 				{
-					ID:   *ModeratorID,
+					ID:   ModeratorID,
 					Type: discordgo.PermissionOverwriteTypeRole,
 					Allow: discordgo.PermissionViewChannel |
 						discordgo.PermissionSendMessages,
 				},
 				{
-					ID:   *BotID,
+					ID:   BotID,
 					Type: discordgo.PermissionOverwriteTypeRole,
 					Allow: discordgo.PermissionViewChannel |
 						discordgo.PermissionSendMessages,
@@ -481,7 +485,7 @@ func register() {
 				},
 			}
 
-			channel, err := s.GuildChannelCreateComplex(*GuildID, discordgo.GuildChannelCreateData{
+			channel, err := s.GuildChannelCreateComplex(GuildID, discordgo.GuildChannelCreateData{
 				Type:                 discordgo.ChannelTypeGuildText,
 				Name:                 "Emoji-" + emoji.ID,
 				ParentID:             parent.ParentID,
@@ -519,9 +523,9 @@ func register() {
 	)
 	registeredCommands := make([]*discordgo.ApplicationCommand, len(Commands))
 	for i, v := range Commands {
-		cmd, err := s.ApplicationCommandCreate(*AppID, *GuildID, v)
+		cmd, err := Session.ApplicationCommandCreate(AppID, GuildID, v)
 		if err != nil {
-			s.Close()
+			Session.Close()
 			panic(fmt.Sprintf("Cannot create '%v' command: %v", v.Name, err))
 		}
 		registeredCommands[i] = cmd
@@ -539,4 +543,30 @@ func returnFailedMessage(s *discordgo.Session, i *discordgo.InteractionCreate, r
 
 	fmt.Println("[ERROR] Reason : " + reason)
 	return
+}
+
+func loadEnvironments() {
+	err := godotenv.Load("settings.env")
+
+	if err != nil {
+		panic(err)
+	}
+
+	GuildID = os.Getenv("guild_id")
+	BotToken = os.Getenv("bot_token")
+	AppID = os.Getenv("application_id")
+	ModeratorID = os.Getenv("moderator_role_id")
+	BotID = os.Getenv("bot_role_id")
+	ModerationChannelName = os.Getenv("moderation_channel_name")
+	misskeyToken = os.Getenv("misskey_token")
+	misskeyHost = os.Getenv("misskey_host")
+
+	fmt.Println(GuildID)
+	fmt.Println(BotToken)
+	fmt.Println(AppID)
+	fmt.Println(BotID)
+	fmt.Println(ModerationChannelName)
+	fmt.Println(misskeyToken)
+	fmt.Println(misskeyHost)
+
 }
