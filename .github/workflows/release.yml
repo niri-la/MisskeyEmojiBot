@@ -34,7 +34,8 @@ jobs:
           done < "CHANGELOG.md"
           RELEASE_NOTES="${RELEASE_NOTES:2}" # 最後の改行を削除
           RELEASE_NOTES_ESCAPE=$(echo "$RELEASE_NOTES" | sed 's/$/%0A/')
-          echo "release_note_body=RELEASE_NOTES_ESCAPE" >> "$GITHUB_ENV"
+          echo "release_note_body=$RELEASE_NOTES_ESCAPE" >> "$GITHUB_ENV"
+          echo -e "${release_note_body//%0A/$'\n'}"
 
       - name: Create Release
         uses: actions/create-release@v1
