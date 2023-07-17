@@ -19,7 +19,7 @@ func runEmojiProcess(emoji *Emoji, s *discordgo.Session, m *discordgo.MessageCre
 			return
 		}
 		emoji.ChannelID = m.ChannelID
-		reg := regexp.MustCompile(`[^a-zA-Z_]+`)
+		reg := regexp.MustCompile(`[^a-z0-9_]+`)
 		result := reg.ReplaceAllStringFunc(m.Content, func(s string) string {
 			return "_"
 		})
