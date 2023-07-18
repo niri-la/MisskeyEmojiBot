@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.0.1] - 2023-07-19
+
+### Fixed
+- fix dockerfile [`#29`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/29)
+
 ## [1.0.0] - 2023-07-18
 
 ### Added
