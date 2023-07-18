@@ -353,6 +353,9 @@ func register() {
 
 			emoji.IsRequested = true
 
+			sendDirectMessage(*emoji, "--- 申請内容 "+emoji.ID+"---\n名前: "+emoji.Name+"\nCategory: "+
+				emoji.Category+"\n"+"tag"+emoji.Tag+"\n"+"isNSFW:"+strconv.FormatBool(emoji.IsSensitive)+"\n---")
+
 			send, err := s.ChannelMessageSend(moderationChannel.ID, ":作成者: "+i.Member.User.Username+"\n"+
 				":: ID "+emoji.ID)
 			if err != nil {
@@ -452,8 +455,6 @@ func register() {
 		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			parent, err := s.Channel(i.ChannelID)
 
-			emoji := newEmojiRequest()
-
 			if err != nil {
 				returnFailedMessage(s, i, "Could not retrieve channel")
 				return
@@ -484,6 +485,8 @@ func register() {
 					Deny: discordgo.PermissionViewChannel,
 				},
 			}
+
+			emoji := newEmojiRequest(i.Member.User.ID)
 
 			channel, err := s.GuildChannelCreateComplex(GuildID, discordgo.GuildChannelCreateData{
 				Type:                 discordgo.ChannelTypeGuildText,
