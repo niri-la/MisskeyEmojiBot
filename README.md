@@ -1,4 +1,4 @@
-# Misskey Emoji Bod
+# Misskey Emoji Bot
 Misskeyの絵文字登録をDiscord上で申請できるDiscord用Botです！
 
 ## 機能
@@ -10,6 +10,7 @@ Misskeyの絵文字登録をDiscord上で申請できるDiscord用Botです！
 
 ## コマンド
 `/init`: 初期設定を行います。
+
 `/ni_rilana`: このBotに関する情報を表示します
 
 
