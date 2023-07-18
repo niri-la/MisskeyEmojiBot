@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"time"
 )
 
 // Bot parameters
@@ -97,6 +98,17 @@ func main() {
 		log.Fatalf("Cannot open the session: %v", err)
 	}
 	defer Session.Close()
+
+	ticker := time.NewTicker(24 * time.Hour)
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				emoji := emojiReconstruction()
+				noteEmojiAdded(emoji)
+			}
+		}
+	}()
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)

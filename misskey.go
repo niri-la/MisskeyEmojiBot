@@ -9,6 +9,7 @@ import (
 	"github.com/yitsushi/go-misskey/services/admin/emoji"
 	"github.com/yitsushi/go-misskey/services/drive/files"
 	"github.com/yitsushi/go-misskey/services/drive/folders"
+	"github.com/yitsushi/go-misskey/services/notes"
 	"io"
 	"log"
 	"os"
@@ -21,6 +22,7 @@ func uploadToMisskey(e Emoji) bool {
 		misskey.WithBaseURL("https", misskeyHost, ""),
 		misskey.WithLogLevel(logrus.ErrorLevel),
 	)
+
 	if err != nil {
 		fmt.Println("[ERROR] Could not connect to misskey")
 	}
@@ -113,4 +115,26 @@ func getFolder(folderName string, client *misskey.Client) (models.Folder, error)
 		return models.Folder{}, err
 	}
 	return create, nil
+}
+
+func note(message notes.CreateRequest) {
+	client, err := misskey.NewClientWithOptions(
+		misskey.WithAPIToken(misskeyToken),
+		misskey.WithBaseURL("https", misskeyHost, ""),
+		misskey.WithLogLevel(logrus.ErrorLevel),
+	)
+
+	if err != nil {
+		fmt.Println("[ERROR] Could not connect to misskey")
+	}
+
+	response, err := client.Notes().Create(message)
+
+	if err != nil {
+		log.Printf("[Notes] Error happened: %s", err)
+		return
+	}
+
+	log.Println("Created note " + response.CreatedNote.ID)
+
 }
