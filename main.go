@@ -267,6 +267,17 @@ func register() {
 				)
 			}
 
+			if emoji.IsRequested {
+				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Flags:   discordgo.MessageFlagsEphemeral,
+						Content: "既に申請は終了しています\n",
+					},
+				})
+				return
+			}
+
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
@@ -294,6 +305,18 @@ func register() {
 					"設定に失敗しました。管理者に問い合わせを行ってください。 #03a\n",
 				)
 			}
+
+			if emoji.IsRequested {
+				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Flags:   discordgo.MessageFlagsEphemeral,
+						Content: "既に申請は終了しています\n",
+					},
+				})
+				return
+			}
+
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
