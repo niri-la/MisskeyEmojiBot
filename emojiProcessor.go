@@ -222,13 +222,10 @@ func emojiModerationReaction(s *discordgo.Session, m *discordgo.MessageReactionA
 	var apCount = 0
 	var dsCount = 0
 
-	for i, reaction := range msg.Reactions {
-
+	for _, reaction := range msg.Reactions {
 		if reaction.Emoji.Name == "🆗" {
-			fmt.Printf("%d: Emoji app count AP: %d\n", i, reaction.Count)
 			apCount = reaction.Count
 		} else if reaction.Emoji.Name == "🆖" {
-			fmt.Printf("%d:Emoji app count DP: %d\n", i, reaction.Count)
 			dsCount = reaction.Count
 		}
 
@@ -237,18 +234,34 @@ func emojiModerationReaction(s *discordgo.Session, m *discordgo.MessageReactionA
 	emoji.ApproveCount = apCount
 	emoji.DisapproveCount = dsCount
 
-	fmt.Printf("Emoji app count: %d, roleCount: %d\n", emoji.ApproveCount, roleCount)
-
 	if emoji.DisapproveCount-1 >= roleCount {
 		disapprove(*emoji)
 		s.ChannelMessageSend(m.ChannelID, "申請は却下されました")
+		closeThread(m.ChannelID)
 		return
 	}
 
 	if emoji.ApproveCount-1 >= roleCount {
 		approve(*emoji)
 		s.ChannelMessageSend(m.ChannelID, "絵文字はアップロードされました")
+		closeThread(m.ChannelID)
 		return
 	}
 
+}
+
+func closeThread(id string) {
+	channel, _ := Session.Channel(id)
+	if !channel.IsThread() {
+		return
+	}
+	archived := true
+	locked := true
+	_, err := Session.ChannelEditComplex(channel.ID, &discordgo.ChannelEdit{
+		Archived: &archived,
+		Locked:   &locked,
+	})
+	if err != nil {
+		panic(err)
+	}
 }
