@@ -378,13 +378,13 @@ func register() {
 					"この度は申請いただき大変ありがとうございました。\n",
 			)
 
-			//s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			//	Type: discordgo.InteractionResponseChannelMessageWithSource,
-			//	Data: &discordgo.InteractionResponseData{
-			//		Flags:   discordgo.MessageFlagsEphemeral,
-			//		Content: "😎",
-			//	},
-			//})
+			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Flags:   discordgo.MessageFlagsEphemeral,
+					Content: "😎",
+				},
+			})
 
 			emoji.IsRequested = true
 
