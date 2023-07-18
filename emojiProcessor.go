@@ -24,7 +24,7 @@ func runEmojiProcess(emoji *Emoji, s *discordgo.Session, m *discordgo.MessageCre
 			return "_"
 		})
 		input := strings.ToLower(result)
-		s.ChannelMessageSend(m.ChannelID, ": input [ "+input+"]")
+		s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+input+"` ]")
 		s.ChannelMessageSend(m.ChannelID, ":---")
 		s.ChannelMessageSend(m.ChannelID, "2. 次に絵文字ファイルをDiscord上に添付してください。対応ファイルは`.png`,`.jpg`,`.jpeg`,`.gif`です。")
 		emoji.Name = input
@@ -69,7 +69,7 @@ func runEmojiProcess(emoji *Emoji, s *discordgo.Session, m *discordgo.MessageCre
 			emoji.State = emoji.State + 1
 
 			s.ChannelMessageSend(m.ChannelID, ":---\n")
-			s.ChannelMessageSend(m.ChannelID, "3. 絵文字のカテゴリを入力してください。特にない場合は「なし」と入力してください。 : `Moji`")
+			s.ChannelMessageSend(m.ChannelID, "3. 絵文字のカテゴリを入力してください。特にない場合は「なし」と入力してください。カテゴリ名については絵文字やリアクションを入力する際のメニューを参考にしてください。 例: `Moji`")
 		} else {
 			s.ChannelMessageSend(m.ChannelID, ": ファイルの添付を行ってください。対応ファイルは`.png`,`.jpg`,`.jpeg`,`.gif`です。")
 		}
@@ -81,13 +81,13 @@ func runEmojiProcess(emoji *Emoji, s *discordgo.Session, m *discordgo.MessageCre
 			emoji.Category = ""
 		}
 		emoji.State = emoji.State + 1
-		s.ChannelMessageSend(m.ChannelID, ": input [ "+m.Content+"]")
+		s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+m.Content+"` ]")
 		s.ChannelMessageSend(m.ChannelID, ":---\n")
-		s.ChannelMessageSend(m.ChannelID, "4. 次に絵文字ファイルに設定するタグ(エイリアス)を入力してください。空白を間に挟むと複数設定できます。例: `絵文字 えもじ エモジ `")
+		s.ChannelMessageSend(m.ChannelID, "4. 次に絵文字ファイルに設定するタグ(エイリアス)を入力してください。空白を間に挟むと複数設定できます。これは絵文字の検索をする際に使用されます。 例: `絵文字 えもじ エモジ `")
 		break
 	case 3:
 		input := strings.Replace(m.Content, "　", " ", -1)
-		s.ChannelMessageSend(m.ChannelID, ": input [ "+input+"]")
+		s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+input+"` ]")
 		s.ChannelMessageSend(m.ChannelID, ":---")
 		s.ChannelMessageSendComplex(m.ChannelID,
 			&discordgo.MessageSend{
@@ -141,6 +141,7 @@ func emojiLastConfirmation(emoji *Emoji, s *discordgo.Session, ChannelID string)
 	s.ChannelMessageSend(ChannelID, ":---\n")
 	s.ChannelMessageSend(ChannelID, "最終確認を行います。\n"+
 		"Name: "+emoji.Name+"\n"+
+		"Category: "+emoji.Category+"\n"+
 		"Tag: "+emoji.Tag+"\n"+
 		"isNSFW: "+strconv.FormatBool(emoji.IsSensitive)+"\n")
 	s.ChannelMessageSendComplex(ChannelID,
