@@ -19,6 +19,7 @@ type Emoji struct {
 	Tag             string `json:"tag"`
 	FilePath        string `json:"filepath"`
 	IsSensitive     bool   `json:"isSensitive"`
+	RequestUser     string `json:"requestUser"`
 	ApproveCount    int    `json:"approveCount"`
 	DisapproveCount int    `json:"disapproveCount"`
 	IsRequested     bool   `json:"isRequested"`
@@ -26,12 +27,12 @@ type Emoji struct {
 	IsFinish        bool   `json:"isFinish"`
 }
 
-func newEmojiRequest() Emoji {
+func newEmojiRequest(user string) Emoji {
 	id, _ := uuid.NewUUID()
 	emoji := Emoji{
 		ID: id.String(),
 	}
-
+	emoji.RequestUser = user
 	emojiProcessList = append(emojiProcessList, emoji)
 	return emoji
 }
@@ -51,6 +52,7 @@ func approve(emoji Emoji) {
 	}
 	uploadToMisskey(emoji)
 	emoji.IsFinish = true
+	sendDirectMessage(emoji, "申請された絵文字は登録されました。"+emoji.ID)
 	deleteChannel(emoji)
 }
 
@@ -61,10 +63,20 @@ func disapprove(emoji Emoji) {
 
 	emoji.IsAccepted = false
 	emoji.IsFinish = true
-
+	sendDirectMessage(emoji, "申請された絵文字は却下されました。 "+emoji.ID)
 	deleteChannel(emoji)
 }
 
 func deleteChannel(emoji Emoji) {
 	Session.ChannelDelete(emoji.ChannelID)
+}
+
+func sendDirectMessage(emoji Emoji, message string) {
+	user, _ := Session.User(emoji.RequestUser)
+	direct, _ := Session.UserChannelCreate(user.ID)
+	_, err := Session.ChannelMessageSend(direct.ID, message)
+	if err != nil {
+		fmt.Println("Error sending message: ", err)
+		return
+	}
 }
