@@ -4,6 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/yitsushi/go-misskey/core"
+	"github.com/yitsushi/go-misskey/models"
+	"github.com/yitsushi/go-misskey/services/notes"
+	"strings"
 )
 
 var (
@@ -79,4 +83,36 @@ func sendDirectMessage(emoji Emoji, message string) {
 		fmt.Println("Error sending message: ", err)
 		return
 	}
+}
+
+func emojiReconstruction() []Emoji {
+	var accepted []Emoji
+	var reconstruction []Emoji
+	for _, emoji := range emojiProcessList {
+		if emoji.IsFinish {
+			if emoji.IsAccepted {
+				accepted = append(accepted, emoji)
+			}
+		} else {
+			reconstruction = append(reconstruction, emoji)
+		}
+	}
+	emojiProcessList = reconstruction
+	return reconstruction
+}
+
+func noteEmojiAdded(emojis []Emoji) {
+	var builder strings.Builder
+	for _, emoji := range emojis {
+		builder.WriteString(":" + emoji.Name + ":")
+	}
+
+	message := core.NewString("#にりらみすきー部 \n 絵文字が追加されました \n" +
+		builder.String())
+
+	note(notes.CreateRequest{
+		Visibility: models.VisibilityPublic,
+		Text:       message,
+		LocalOnly:  true,
+	})
 }
