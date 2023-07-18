@@ -107,7 +107,7 @@ func noteEmojiAdded(emojis []Emoji) {
 		builder.WriteString(":" + emoji.Name + ":")
 	}
 
-	message := core.NewString("#にりらみすきー部 \n 絵文字が追加されました \n" +
+	message := core.NewString("#にりらみすきー部 \n絵文字が追加されました\n" +
 		builder.String())
 
 	note(notes.CreateRequest{
