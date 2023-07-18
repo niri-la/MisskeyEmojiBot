@@ -51,6 +51,7 @@ func approve(emoji Emoji) {
 	}
 	uploadToMisskey(emoji)
 	emoji.IsFinish = true
+	deleteChannel(emoji)
 }
 
 func disapprove(emoji Emoji) {
@@ -60,4 +61,10 @@ func disapprove(emoji Emoji) {
 
 	emoji.IsAccepted = false
 	emoji.IsFinish = true
+
+	deleteChannel(emoji)
+}
+
+func deleteChannel(emoji Emoji) {
+	Session.ChannelDelete(emoji.ChannelID)
 }
