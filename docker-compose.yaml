@@ -1,0 +1,5 @@
+services:
+  emoji:
+    build: .
+    volumes:
+      - .:/app
