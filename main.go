@@ -105,7 +105,9 @@ func main() {
 			select {
 			case <-ticker.C:
 				emoji := emojiReconstruction()
-				noteEmojiAdded(emoji)
+				if len(emoji) != 0 {
+					noteEmojiAdded(emoji)
+				}
 			}
 		}
 	}()
