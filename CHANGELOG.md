@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Delete channels and archive threads after deciding whether or not to apply for pictograms. [`#13`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/13)
+- User feedback implementation.　[`#15`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/15)
 
 ### Changed
 - Changed from hard-coding such as Token to using env files [`#11`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/11)
