@@ -343,13 +343,13 @@ func register() {
 					"この度は申請いただき大変ありがとうございました。\n",
 			)
 
-			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Flags:   discordgo.MessageFlagsEphemeral,
-					Content: "😎",
-				},
-			})
+			//s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			//	Type: discordgo.InteractionResponseChannelMessageWithSource,
+			//	Data: &discordgo.InteractionResponseData{
+			//		Flags:   discordgo.MessageFlagsEphemeral,
+			//		Content: "😎",
+			//	},
+			//})
 
 			emoji.IsRequested = true
 
@@ -503,7 +503,7 @@ func register() {
 
 			s.ChannelMessageSend(
 				channel.ID,
-				"1. 絵文字の名前について教えてください 例: 絵文字では`:emoji-name:`となりますが、この時の`emoji-name`を入力してください \n",
+				"1. 絵文字の名前について教えてください。 例: 絵文字では`:emoji-name:`となりますが、この時の`emoji-name`を入力してください。入力可能な文字は`小文字アルファベット`, `数字`, `_`です。 \n",
 			)
 
 			if err != nil {
