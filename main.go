@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -69,6 +70,10 @@ func main() {
 		}
 
 		channel, _ := s.Channel(m.ChannelID)
+
+		if !strings.Contains(channel.Name, "emoji-") {
+			return
+		}
 
 		emoji, err := GetEmoji(channel.Name[6:])
 
@@ -530,6 +535,13 @@ func register() {
 				PermissionOverwrites: overwrites,
 			})
 
+			if err != nil {
+				returnFailedMessage(s, i, "Could not create emoji channel")
+				log.Printf("[ERROR] %v\n", err)
+				emoji.abort()
+				return
+			}
+
 			s.ChannelMessageSend(
 				channel.ID,
 				": 絵文字申請チャンネルへようこそ！\n"+
@@ -543,11 +555,6 @@ func register() {
 				channel.ID,
 				"1. 絵文字の名前について教えてください。 例: 絵文字では`:emoji-name:`となりますが、この時の`emoji-name`を入力してください。入力可能な文字は`小文字アルファベット`, `数字`, `_`です。 \n",
 			)
-
-			if err != nil {
-				returnFailedMessage(s, i, "Could not create emoji channel")
-				return
-			}
 
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
