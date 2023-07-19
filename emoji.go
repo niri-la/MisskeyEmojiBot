@@ -116,3 +116,19 @@ func noteEmojiAdded(emojis []Emoji) {
 		LocalOnly:  true,
 	})
 }
+
+func (e Emoji) abort() {
+	remove(e)
+	e.IsFinish = true
+	e.State = 10
+}
+
+func remove(val Emoji) {
+	var newSlice []Emoji
+	for _, v := range emojiProcessList {
+		if v != val {
+			newSlice = append(newSlice, v)
+		}
+	}
+	emojiProcessList = newSlice
+}
