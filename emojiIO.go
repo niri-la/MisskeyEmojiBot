@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -50,7 +50,7 @@ func emojiDownload(url string, filePath string) error {
 func deleteEmoji(filePath string) {
 	err := os.Remove(filePath)
 	if err != nil {
-		fmt.Printf("[ERROR] file not found %s\n", filePath)
+		log.Printf("[ERROR] file not found %s\n", filePath)
 	}
 }
 

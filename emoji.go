@@ -2,11 +2,11 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/yitsushi/go-misskey/core"
 	"github.com/yitsushi/go-misskey/models"
 	"github.com/yitsushi/go-misskey/services/notes"
+	"log"
 	"strings"
 )
 
@@ -52,7 +52,7 @@ func GetEmoji(id string) (*Emoji, error) {
 
 func approve(emoji Emoji) {
 	if emoji.IsAccepted {
-		fmt.Println("[ERROR] 既に絵文字はアップロードされています。")
+		log.Println("[ERROR] 既に絵文字はアップロードされています。")
 	}
 	uploadToMisskey(emoji)
 	emoji.IsFinish = true
@@ -80,7 +80,7 @@ func sendDirectMessage(emoji Emoji, message string) {
 	direct, _ := Session.UserChannelCreate(user.ID)
 	_, err := Session.ChannelMessageSend(direct.ID, message)
 	if err != nil {
-		fmt.Println("Error sending message: ", err)
+		log.Println("Error sending message: ", err)
 		return
 	}
 }

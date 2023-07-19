@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"github.com/bwmarrin/discordgo"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -49,7 +49,7 @@ func runEmojiProcess(emoji *Emoji, s *discordgo.Session, m *discordgo.MessageCre
 				return
 			}
 
-			fmt.Printf("[Emoji] File %s downloaded. (%s)\n", attachment.Filename, emoji.ID)
+			log.Printf("[Emoji] File %s downloaded. (%s)\n", attachment.Filename, emoji.ID)
 
 			file, err := os.Open(emoji.FilePath)
 			if err != nil {
@@ -121,7 +121,7 @@ func runEmojiProcess(emoji *Emoji, s *discordgo.Session, m *discordgo.MessageCre
 		break
 	// NSFWかの確認
 	case 4:
-		fmt.Println("[ERROR] 実装がおかしい")
+		log.Println("[ERROR] 実装がおかしい")
 		break
 	// (licenseの確認) 最終確認
 	case 5:
@@ -183,7 +183,6 @@ func emojiModerationReaction(s *discordgo.Session, m *discordgo.MessageReactionA
 	found := false
 
 	for _, e := range emojiProcessList {
-		fmt.Println(channel.Name, " ", e.ChannelID)
 		if channel.Name == e.ID {
 			emoji = &e
 			found = true
@@ -202,21 +201,19 @@ func emojiModerationReaction(s *discordgo.Session, m *discordgo.MessageReactionA
 	}
 
 	if emoji.IsFinish {
-		fmt.Println("[Emoji] already finished emoji request. %s", emoji.ID)
+		log.Printf("[Emoji] already finished emoji request. %s\n", emoji.ID)
 		return
 	}
 
 	roleCount, err := countMembersWithRole(s, GuildID, ModeratorID)
 	if err != nil {
-		fmt.Println("fatal error. check moderation ID")
+		log.Println("fatal error. check moderation ID")
 		return
 	}
 
-	fmt.Printf("Number of members with role: %d\n", roleCount)
-
 	msg, err := s.ChannelMessage(channel.ID, m.MessageID)
 	if err != nil {
-		fmt.Println("Error retrieving message:", err)
+		log.Println("Error retrieving message: ", err)
 		return
 	}
 
