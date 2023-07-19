@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/sirupsen/logrus"
 	"github.com/yitsushi/go-misskey"
 	"github.com/yitsushi/go-misskey/core"
@@ -24,7 +23,7 @@ func uploadToMisskey(e Emoji) bool {
 	)
 
 	if err != nil {
-		fmt.Println("[ERROR] Could not connect to misskey")
+		log.Println("[ERROR] Could not connect to misskey")
 	}
 
 	file, err := os.Open(e.FilePath)
@@ -125,7 +124,7 @@ func note(message notes.CreateRequest) {
 	)
 
 	if err != nil {
-		fmt.Println("[ERROR] Could not connect to misskey")
+		log.Println("[ERROR] Could not connect to misskey")
 	}
 
 	response, err := client.Notes().Create(message)

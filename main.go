@@ -73,8 +73,6 @@ func main() {
 		emoji, err := GetEmoji(channel.Name[6:])
 
 		if err != nil {
-			//s.ChannelMessageSend(m.ChannelID, "新たな申請のRequestに失敗しました。管理者に問い合わせを行ってください。")
-			//fmt.Println("[ERROR] Reason : emoji not found")
 			return
 		}
 
@@ -581,7 +579,7 @@ func returnFailedMessage(s *discordgo.Session, i *discordgo.InteractionCreate, r
 		},
 	})
 
-	fmt.Println("[ERROR] Reason : " + reason)
+	log.Println("[ERROR] Reason : " + reason)
 	return
 }
 
@@ -601,12 +599,12 @@ func loadEnvironments() {
 	misskeyToken = os.Getenv("misskey_token")
 	misskeyHost = os.Getenv("misskey_host")
 
-	fmt.Println(GuildID)
-	fmt.Println(BotToken)
-	fmt.Println(AppID)
-	fmt.Println(BotID)
-	fmt.Println(ModerationChannelName)
-	fmt.Println(misskeyToken)
-	fmt.Println(misskeyHost)
+	log.Println(GuildID)
+	log.Println(BotToken)
+	log.Println(AppID)
+	log.Println(BotID)
+	log.Println(ModerationChannelName)
+	log.Println(misskeyToken)
+	log.Println(misskeyHost)
 
 }
