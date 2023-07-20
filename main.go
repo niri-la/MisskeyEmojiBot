@@ -165,6 +165,12 @@ func register() {
 			Description: "絵文字申請用の初期化を行います",
 		},
 		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+
+			if !hasPermission(*i.Member.User) {
+				returnFailedMessage(s, i, "No permission.")
+				return
+			}
+
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
@@ -195,6 +201,7 @@ func register() {
 		},
 		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			channelID := i.MessageComponentData().Values[0]
+
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
