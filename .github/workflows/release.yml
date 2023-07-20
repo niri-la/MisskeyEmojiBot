@@ -23,13 +23,12 @@ jobs:
           RELEASE_NOTES="## Version ""$RELEASE_VERSION"$'\n'
           CURRENT_LINE=0
           while IFS= read -r line; do
-            if [[ "$CURRENT_LINE" == 1 ]]; then
-              RELEASE_NOTES="$RELEASE_NOTES"$'\n'"$line"
-            fi
             if [[ "$line" == "## [$RELEASE_VERSION] - "* ]]; then
               CURRENT_LINE=1
             elif [[ "$CURRENT_LINE" == 1 && "$line" == "## ["* ]]; then
               CURRENT_LINE=0
+            elif [[ "$CURRENT_LINE" == 1 ]]; then
+              RELEASE_NOTES="$RELEASE_NOTES"$'\n'"$line"
             fi
           done < "CHANGELOG.md"
           echo "$RELEASE_NOTES" > release_notes_diff.txt
