@@ -1,7 +1,7 @@
 package main
 
 import (
-	debug "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"os"
 	"strconv"
 
@@ -23,7 +23,7 @@ func init() {
 func addComponent(command *discordgo.ApplicationCommand, fn func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
 	_, exist := ComponentsHandlers[command.Name]
 	if exist {
-		logger.WithFields(debug.Fields{
+		logger.WithFields(logrus.Fields{
 			"event": "command",
 			"name":  command.Name,
 		}).Panic("command already existed.")
@@ -132,7 +132,7 @@ func nsfwComponent() {
 					"設定に失敗しました。管理者に問い合わせを行ってください。 #03a\n",
 				)
 
-				logger.WithFields(debug.Fields{
+				logger.WithFields(logrus.Fields{
 					"event": "nsfw",
 					"id":    emoji.ID,
 					"user":  i.Member.User,
@@ -160,8 +160,8 @@ func nsfwComponent() {
 				},
 			})
 			emoji.IsSensitive = true
-			emoji.State = 5
-			emojiLastConfirmation(emoji, s, i.ChannelID)
+			ProcessRequest(emoji, s, i.ChannelID)
+
 		},
 	)
 
@@ -179,7 +179,7 @@ func nsfwComponent() {
 					"設定に失敗しました。管理者に問い合わせを行ってください。 #03a\n",
 				)
 
-				logger.WithFields(debug.Fields{
+				logger.WithFields(logrus.Fields{
 					"event": "nsfw",
 					"id":    emoji.ID,
 					"user":  i.Member.User,
@@ -209,8 +209,7 @@ func nsfwComponent() {
 			})
 
 			emoji.IsSensitive = false
-			emoji.State = 5
-			emojiLastConfirmation(emoji, s, i.ChannelID)
+			ProcessRequest(emoji, s, i.ChannelID)
 
 		},
 	)
@@ -255,7 +254,7 @@ func newEmojiComponent() {
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
 					Flags:   discordgo.MessageFlagsEphemeral,
-					Content: "😎",
+					Content: "📨",
 				},
 			})
 
@@ -276,6 +275,13 @@ func newEmojiComponent() {
 				Invitable:           false,
 				RateLimitPerUser:    10,
 			})
+
+			logger.WithFields(logrus.Fields{
+				"user":    i.Member.User.Username,
+				"channel": channel.Name,
+				"id":      emoji.ID,
+				"name":    emoji.Name,
+			}).Info("Submit Request.")
 
 			s.ChannelMessageSend(thread.ID, ":---\n"+
 				"Requested by "+i.Member.User.Username+"\n"+
@@ -341,16 +347,27 @@ func newEmojiComponent() {
 			}
 
 			emoji.IsSensitive = false
-			emoji.State = 0
+			emoji.RequestState = workflow[0]
+			emoji.ResponseState = workflow[0]
 
 			deleteEmoji(emoji.FilePath)
 
-			s.ChannelMessageSend(
-				channel.ID,
-				"リクエストを初期化します。"+
-					":---\n"+
-					"1. 絵文字の名前について教えてください 例: 絵文字では`:emoji-name:`となりますが、この時の`emoji-name`を入力してください \n",
-			)
+			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Flags:   discordgo.MessageFlagsEphemeral,
+					Content: "リクエストを初期化します。\n",
+				},
+			})
+
+			logger.WithFields(logrus.Fields{
+				"user":    i.Member.User.Username,
+				"channel": channel.Name,
+				"id":      emoji.ID,
+				"name":    emoji.Name,
+			}).Debug("Request reset.")
+
+			first(emoji, s, channel.ID)
 
 		},
 	)
@@ -411,6 +428,14 @@ func newEmojiChannelComponent() {
 				return
 			}
 
+			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Flags:   discordgo.MessageFlagsEphemeral,
+					Content: "申請チャンネルを作成しました < #" + channel.Name + " >\n",
+				},
+			})
+
 			s.ChannelMessageSend(
 				channel.ID,
 				": 絵文字申請チャンネルへようこそ！\n"+
@@ -419,19 +444,8 @@ func newEmojiChannelComponent() {
 					" 申請は絵文字Botが担当させていただきます。Botが一度非アクティブになると設定は初期化されますのでご注意ください！\n"+
 					":---\n",
 			)
-
-			s.ChannelMessageSend(
-				channel.ID,
-				"1. 絵文字の名前について教えてください。 例: 絵文字では`:emoji-name:`となりますが、この時の`emoji-name`を入力してください。入力可能な文字は`小文字アルファベット`, `数字`, `_`です。 \n",
-			)
-
-			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Flags:   discordgo.MessageFlagsEphemeral,
-					Content: "申請チャンネルを作成しました < #" + channel.Name + " >\n",
-				},
-			})
+			emoji, _ = GetEmoji(emoji.ID)
+			first(emoji, s, channel.ID)
 		},
 	)
 

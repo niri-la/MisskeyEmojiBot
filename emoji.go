@@ -27,10 +27,12 @@ var (
 type Emoji struct {
 	ID              string `json:"id"`
 	ChannelID       string `json:"channelID"`
-	State           int    `json:"state"`
+	ResponseState   string `json:"responseState"`
+	RequestState    string `json:"requestState"`
 	Name            string `json:"name"`
 	Category        string `json:"category"`
 	Tag             string `json:"tag"`
+	License         string `json:"license"`
 	FilePath        string `json:"filepath"`
 	IsSensitive     bool   `json:"isSensitive"`
 	RequestUser     string `json:"requestUser"`
@@ -41,14 +43,14 @@ type Emoji struct {
 	IsFinish        bool   `json:"isFinish"`
 }
 
-func newEmojiRequest(user string) Emoji {
+func newEmojiRequest(user string) *Emoji {
 	id, _ := uuid.NewUUID()
 	emoji := Emoji{
 		ID: id.String(),
 	}
 	emoji.RequestUser = user
 	emojiProcessList = append(emojiProcessList, emoji)
-	return emoji
+	return &emoji
 }
 
 func GetEmoji(id string) (*Emoji, error) {
@@ -139,10 +141,18 @@ func noteEmojiAdded(emojis []Emoji) {
 	})
 }
 
+func (e Emoji) reset() {
+	e.RequestState = workflow[0]
+	e.ResponseState = workflow[0]
+	e.IsSensitive = false
+	e.IsAccepted = false
+	e.IsRequested = false
+}
+
 func (e Emoji) abort() {
 	remove(e)
+	e.reset()
 	e.IsFinish = true
-	e.State = 10
 }
 
 func remove(val Emoji) {
