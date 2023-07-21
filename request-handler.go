@@ -542,34 +542,38 @@ func emojiModerationReaction(s *discordgo.Session, m *discordgo.MessageReactionA
 	emoji.ApproveCount = apCount
 	emoji.DisapproveCount = dsCount
 
-	if emoji.DisapproveCount-1 >= roleCount {
+	if emoji.DisapproveCount-1 >= roleCount || (isDebug && emoji.DisapproveCount-1 >= 1) {
 		disapprove(*emoji)
 		s.ChannelMessageSend(m.ChannelID, "申請は却下されました")
-		closeThread(m.ChannelID)
+		closeThread(m.ChannelID, emoji.ModerationMessageID)
 		return
 	}
 
-	if emoji.ApproveCount-1 >= roleCount {
+	if emoji.ApproveCount-1 >= roleCount || (isDebug && emoji.ApproveCount-1 >= 1) {
 		approve(*emoji)
 		s.ChannelMessageSend(m.ChannelID, "絵文字はアップロードされました")
-		closeThread(m.ChannelID)
+		closeThread(m.ChannelID, emoji.ModerationMessageID)
 		return
 	}
 
 }
 
-func closeThread(id string) {
-	channel, _ := Session.Channel(id)
+func closeThread(threadID string, messageID string) {
+	channel, _ := Session.Channel(threadID)
 	if !channel.IsThread() {
 		return
 	}
 	archived := true
 	locked := true
-	_, err := Session.ChannelEditComplex(channel.ID, &discordgo.ChannelEdit{
+	t, err := Session.ChannelEditComplex(channel.ID, &discordgo.ChannelEdit{
 		Archived: &archived,
 		Locked:   &locked,
 	})
+
+	err = Session.ChannelMessageDelete(t.ParentID, messageID)
 	if err != nil {
-		panic(err)
+		logger.WithFields(logrus.Fields{
+			"event": "delete-message",
+		}).Error(err)
 	}
 }

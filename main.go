@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -22,6 +23,7 @@ var (
 	ModerationChannelName string
 	misskeyToken          string
 	misskeyHost           string
+	isDebug               bool
 	Session               *discordgo.Session
 	logger                *logrus.Logger
 )
@@ -32,18 +34,23 @@ var moderationChannel *discordgo.Channel
 var messageJp string
 
 func init() {
+	loadEnvironments()
 	logger = logrus.New()
 	// Log as JSON instead of the default ASCII formatter.
 	//debug.SetFormatter(&debug.TextFormatter{})
 	logger.SetOutput(os.Stdout)
-	logger.SetLevel(logrus.DebugLevel)
+	if isDebug {
+		logger.SetLevel(logrus.DebugLevel)
+	} else {
+		logger.SetLevel(logrus.InfoLevel)
+	}
 	logger.SetFormatter(&logrus.TextFormatter{
 		ForceColors: true,
 	})
 }
 
 func init() {
-	loadEnvironments()
+
 	var err error
 	Session, err = discordgo.New("Bot " + BotToken)
 	if err != nil {
@@ -210,6 +217,7 @@ func loadEnvironments() {
 	ModerationChannelName = os.Getenv("moderation_channel_name")
 	misskeyToken = os.Getenv("misskey_token")
 	misskeyHost = os.Getenv("misskey_host")
+	isDebug, _ = strconv.ParseBool(os.Getenv("debug"))
 
 	logger.Debug(GuildID)
 	logger.Debug(BotToken)
@@ -218,5 +226,6 @@ func loadEnvironments() {
 	logger.Debug(ModerationChannelName)
 	logger.Debug(misskeyToken)
 	logger.Debug(misskeyHost)
+	logger.Debug(isDebug)
 
 }
