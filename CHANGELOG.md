@@ -15,6 +15,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.1.0] - 2023-07-22
+
+### Added
+- Added Emoji request abort function [`#36`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/36)
+- Added user permission checker [`#42`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/42)
+- Multilingual implementation [`#45`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/45)
+- Added feature to delete thread messages [`#51`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/51)
+
+### Changed
+- fmt to logrus [`#33`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/33)
+- Change request flow [`#49`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/49)
+
+### Fixed
+- Fixed DM bug. [`#37`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/37)
+- Fixed request input alias [`#50`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/50)
+
 ## [1.0.1] - 2023-07-19
 
 ### Fixed
