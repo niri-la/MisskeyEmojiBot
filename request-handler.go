@@ -104,7 +104,8 @@ func init() {
 			IsSuccess: true,
 		}
 
-		_, err := s.ChannelMessageSend(cID, ":: 次に絵文字ファイルに設定するタグ(エイリアス)を入力してください。空白を間に挟むと複数設定できます。これは絵文字の検索をする際に使用されます。 例: `絵文字 えもじ エモジ `")
+		_, err := s.ChannelMessageSend(cID, ":: 次に絵文字ファイルに設定するタグ(エイリアス)を入力してください。空白を間に挟むと複数設定できます。これは絵文字の検索をする際に使用されます。 例: `絵文字 えもじ エモジ `"+
+			" 必要がない場合は`tagなし`と入力してください。")
 		if err != nil {
 			logger.WithFields(logrus.Fields{
 				"user":  emoji.RequestUser,
@@ -123,7 +124,7 @@ func init() {
 			IsSuccess: true,
 		}
 
-		_, err := s.ChannelMessageSend(cID, ":: 備考があれば記載してください。(misskeyではLicenseに記載されます。)")
+		_, err := s.ChannelMessageSend(cID, ":: 備考があれば記載してください。特にない場合は`なし`と入力してください。(misskeyではLicenseに記載されます。)")
 		if err != nil {
 			logger.WithFields(logrus.Fields{
 				"user":  emoji.RequestUser,
@@ -180,6 +181,7 @@ func init() {
 			"Name: "+emoji.Name+"\n"+
 			"Category: "+emoji.Category+"\n"+
 			"Tag: "+emoji.Tag+"\n"+
+			"License: "+emoji.License+"\n"+
 			"isNSFW: "+strconv.FormatBool(emoji.IsSensitive)+"\n")
 		s.ChannelMessageSendComplex(cID,
 			&discordgo.MessageSend{
@@ -333,13 +335,13 @@ func init() {
 		}
 
 		emoji.Category = m.Content
-		if m.Content == "なし" {
+		if m.Content == "なし" || m.Content == "その他" {
 			emoji.Category = ""
 		}
 		emoji.ResponseState = "Category"
 		response.IsSuccess = true
 		response.NextState = response.NextState + 1
-		s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+m.Content+"` ]")
+		s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+emoji.Category+"` ]")
 		s.ChannelMessageSend(m.ChannelID, ":---\n")
 
 		logger.WithFields(logrus.Fields{
@@ -359,11 +361,15 @@ func init() {
 		}
 
 		input := strings.Replace(m.Content, "　", " ", -1)
+		if input == "tagなし" {
+			input = ""
+		}
 		s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+input+"` ]")
 		s.ChannelMessageSend(m.ChannelID, ":---")
 
 		emoji.ResponseState = "Tag"
 		emoji.Tag = input
+
 		response.IsSuccess = true
 		response.NextState = response.NextState + 1
 
@@ -388,6 +394,9 @@ func init() {
 
 		emoji.ResponseState = "License"
 		emoji.License = m.Content
+		if m.Content == "なし" {
+			emoji.License = ""
+		}
 		response.IsSuccess = true
 		response.NextState = response.NextState + 1
 
