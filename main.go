@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
-	debug "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
 	"strings"
@@ -23,7 +23,7 @@ var (
 	misskeyToken          string
 	misskeyHost           string
 	Session               *discordgo.Session
-	logger                *debug.Logger
+	logger                *logrus.Logger
 )
 
 var moderationChannel *discordgo.Channel
@@ -32,11 +32,14 @@ var moderationChannel *discordgo.Channel
 var messageJp string
 
 func init() {
-	logger = debug.New()
+	logger = logrus.New()
 	// Log as JSON instead of the default ASCII formatter.
 	//debug.SetFormatter(&debug.TextFormatter{})
-	debug.SetOutput(os.Stdout)
-	debug.SetLevel(debug.DebugLevel)
+	logger.SetOutput(os.Stdout)
+	logger.SetLevel(logrus.DebugLevel)
+	logger.SetFormatter(&logrus.TextFormatter{
+		ForceColors: true,
+	})
 }
 
 func init() {
@@ -44,7 +47,7 @@ func init() {
 	var err error
 	Session, err = discordgo.New("Bot " + BotToken)
 	if err != nil {
-		logger.WithFields(debug.Fields{
+		logger.WithFields(logrus.Fields{
 			"event": "init",
 		}).Error(err)
 		return
@@ -56,7 +59,7 @@ func init() {
 		cmd, err := Session.ApplicationCommandCreate(AppID, GuildID, v)
 		if err != nil {
 			Session.Close()
-			logger.WithFields(debug.Fields{
+			logger.WithFields(logrus.Fields{
 				"event":     "commad",
 				"name":      v.Name,
 				"guild id":  GuildID,
@@ -75,6 +78,7 @@ func main() {
 	// start
 	Session.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
 		logger.Info(":: Bot starting")
+		logger.Info(":::::::::::::::::::::::")
 	})
 
 	// コンポーネントはインタラクションの一部なので、InteractionCreateHandlerを登録します。
@@ -105,11 +109,21 @@ func main() {
 		emoji, err := GetEmoji(channel.Name[6:])
 
 		if err != nil {
+			logger.WithFields(logrus.Fields{
+				"user":    m.Author.Username,
+				"channel": channel.Name,
+				"message": m.Content,
+			}).Debug(err)
 			return
 		}
 
-		runEmojiProcess(emoji, s, m)
+		logger.WithFields(logrus.Fields{
+			"user":    m.Author.Username,
+			"channel": channel.Name,
+			"message": m.Content,
+		}).Trace("Send emoji channel.")
 
+		Process(emoji, s, m)
 	})
 
 	Session.AddHandler(emojiModerationReaction)
@@ -120,14 +134,14 @@ func main() {
 	})
 
 	if err != nil {
-		logger.WithFields(debug.Fields{
+		logger.WithFields(logrus.Fields{
 			"event": "Session",
 		}).Fatal(err)
 	}
 
 	err = Session.Open()
 	if err != nil {
-		logger.WithFields(debug.Fields{
+		logger.WithFields(logrus.Fields{
 			"event": "Session",
 		}).Fatal(err)
 	}
@@ -146,8 +160,6 @@ func main() {
 			}
 		}
 	}()
-
-	logger.Debug(":: System start")
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
