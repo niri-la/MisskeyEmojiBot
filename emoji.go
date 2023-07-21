@@ -3,11 +3,11 @@ package main
 import (
 	"errors"
 	"github.com/google/uuid"
+	debug "github.com/sirupsen/logrus"
 	"github.com/yitsushi/go-misskey/core"
 	"github.com/yitsushi/go-misskey/models"
 	"github.com/yitsushi/go-misskey/services/notes"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -62,7 +62,13 @@ func GetEmoji(id string) (*Emoji, error) {
 
 func approve(emoji Emoji) {
 	if emoji.IsAccepted {
-		log.Println("[ERROR] 既に絵文字はアップロードされています。")
+		u, _ := Session.User(emoji.RequestUser)
+		logger.WithFields(debug.Fields{
+			"event": "nsfw",
+			"id":    emoji.ID,
+			"user":  u.Username,
+			"name":  emoji.Name,
+		}).Warn("already uploaded")
 	}
 	uploadToMisskey(emoji)
 	emoji.IsFinish = true
@@ -90,7 +96,13 @@ func sendDirectMessage(emoji Emoji, message string) {
 	direct, _ := Session.UserChannelCreate(user.ID)
 	_, err := Session.ChannelMessageSend(direct.ID, message)
 	if err != nil {
-		log.Println("Error sending message: ", err)
+		u, _ := Session.User(emoji.RequestUser)
+		logger.WithFields(debug.Fields{
+			"event": "emoji",
+			"id":    emoji.ID,
+			"user":  u.Username,
+			"name":  emoji.Name,
+		}).Error(err)
 		return
 	}
 }
@@ -176,7 +188,10 @@ func emojiDownload(url string, filePath string) error {
 func deleteEmoji(filePath string) {
 	err := os.Remove(filePath)
 	if err != nil {
-		log.Printf("[ERROR] file not found %s\n", filePath)
+		logger.WithFields(debug.Fields{
+			"event": "emoji",
+			"path":  filePath,
+		}).Error(err)
 	}
 }
 

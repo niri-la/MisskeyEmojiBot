@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"log"
+	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -46,15 +46,32 @@ func runEmojiProcess(emoji *Emoji, s *discordgo.Session, m *discordgo.MessageCre
 			if err != nil {
 				s.ChannelMessageSend(m.ChannelID, ": Error! \n"+
 					"申請中にエラーが発生しました。URLを確認して再アップロードを行うか、管理者へ問い合わせを行ってください。#01a")
+				logger.WithFields(logrus.Fields{
+					"event": "download",
+					"id":    emoji.ID,
+					"user":  m.Member.User,
+					"name":  emoji.Name,
+				}).Warn(err)
 				return
 			}
 
-			log.Printf("[Emoji] File %s downloaded. (%s)\n", attachment.Filename, emoji.ID)
+			logger.WithFields(logrus.Fields{
+				"event": "download",
+				"id":    emoji.ID,
+				"user":  m.Member.User,
+				"name":  emoji.Name,
+			}).Debug("Emoji Downloaded")
 
 			file, err := os.Open(emoji.FilePath)
 			if err != nil {
 				s.ChannelMessageSend(m.ChannelID, ": Error! \n"+
 					"申請中にエラーが発生しました。管理者へ問い合わせを行ってください。#01b")
+				logger.WithFields(logrus.Fields{
+					"event": "file open",
+					"id":    emoji.ID,
+					"user":  m.Member.User,
+					"name":  emoji.Name,
+				}).Warn(err)
 				return
 			}
 			defer file.Close()
@@ -63,6 +80,12 @@ func runEmojiProcess(emoji *Emoji, s *discordgo.Session, m *discordgo.MessageCre
 			if err != nil {
 				s.ChannelMessageSend(m.ChannelID, ": Error! \n"+
 					"申請中にエラーが発生しました。管理者へ問い合わせを行ってください。#01d")
+				logger.WithFields(logrus.Fields{
+					"event": "file send",
+					"id":    emoji.ID,
+					"user":  m.Member.User,
+					"name":  emoji.Name,
+				}).Fatal(err)
 				return
 			}
 
@@ -121,7 +144,7 @@ func runEmojiProcess(emoji *Emoji, s *discordgo.Session, m *discordgo.MessageCre
 		break
 	// NSFWかの確認
 	case 4:
-		log.Println("[ERROR] 実装がおかしい")
+		logger.Error("実装がおかしい")
 		break
 	// (licenseの確認) 最終確認
 	case 5:
@@ -201,19 +224,35 @@ func emojiModerationReaction(s *discordgo.Session, m *discordgo.MessageReactionA
 	}
 
 	if emoji.IsFinish {
-		log.Printf("[Emoji] already finished emoji request. %s\n", emoji.ID)
+		logger.WithFields(logrus.Fields{
+			"event": "emoji",
+			"id":    emoji.ID,
+			"user":  m.Member.User.Username,
+			"name":  emoji.Name,
+		}).Error("already finished emoji request.")
 		return
 	}
 
 	roleCount, err := countMembersWithRole(s, GuildID, ModeratorID)
 	if err != nil {
-		log.Println("fatal error. check moderation ID")
+		logger.WithFields(logrus.Fields{
+			"event":         "emoji",
+			"id":            emoji.ID,
+			"user":          m.Member.User.Username,
+			"name":          emoji.Name,
+			"moderation id": ModeratorID,
+		}).Error("Invalid moderation ID")
 		return
 	}
 
 	msg, err := s.ChannelMessage(channel.ID, m.MessageID)
 	if err != nil {
-		log.Println("Error retrieving message: ", err)
+		logger.WithFields(logrus.Fields{
+			"event": "emoji",
+			"id":    emoji.ID,
+			"user":  m.Member.User.Username,
+			"name":  emoji.Name,
+		}).Error(err)
 		return
 	}
 
