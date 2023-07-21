@@ -333,7 +333,7 @@ func init() {
 		}
 
 		emoji.Category = m.Content
-		if m.Content == "なし" {
+		if m.Content == "なし" || m.Content == "その他" {
 			emoji.Category = ""
 		}
 		emoji.ResponseState = "Category"
