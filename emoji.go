@@ -25,22 +25,24 @@ var (
 )
 
 type Emoji struct {
-	ID              string `json:"id"`
-	ChannelID       string `json:"channelID"`
-	ResponseState   string `json:"responseState"`
-	RequestState    string `json:"requestState"`
-	Name            string `json:"name"`
-	Category        string `json:"category"`
-	Tag             string `json:"tag"`
-	License         string `json:"license"`
-	FilePath        string `json:"filepath"`
-	IsSensitive     bool   `json:"isSensitive"`
-	RequestUser     string `json:"requestUser"`
-	ApproveCount    int    `json:"approveCount"`
-	DisapproveCount int    `json:"disapproveCount"`
-	IsRequested     bool   `json:"isRequested"`
-	IsAccepted      bool   `json:"isAccepted"`
-	IsFinish        bool   `json:"isFinish"`
+	ID                  string `json:"id"`
+	ChannelID           string `json:"channelID"`
+	ResponseState       string `json:"responseState"`
+	RequestState        string `json:"requestState"`
+	Name                string `json:"name"`
+	Category            string `json:"category"`
+	Tag                 string `json:"tag"`
+	License             string `json:"license"`
+	FilePath            string `json:"filepath"`
+	IsSensitive         bool   `json:"isSensitive"`
+	RequestUser         string `json:"requestUser"`
+	ApproveCount        int    `json:"approveCount"`
+	DisapproveCount     int    `json:"disapproveCount"`
+	IsRequested         bool   `json:"isRequested"`
+	IsAccepted          bool   `json:"isAccepted"`
+	IsFinish            bool   `json:"isFinish"`
+	ModerationMessageID string `json:"moderationMessageID"`
+	UserThreadID        string `json:"userThreadID"`
 }
 
 func newEmojiRequest(user string) *Emoji {

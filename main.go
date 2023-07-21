@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -22,6 +23,7 @@ var (
 	ModerationChannelName string
 	misskeyToken          string
 	misskeyHost           string
+	isDebug               bool
 	Session               *discordgo.Session
 	logger                *logrus.Logger
 )
@@ -210,6 +212,7 @@ func loadEnvironments() {
 	ModerationChannelName = os.Getenv("moderation_channel_name")
 	misskeyToken = os.Getenv("misskey_token")
 	misskeyHost = os.Getenv("misskey_host")
+	isDebug, _ = strconv.ParseBool(os.Getenv("debug"))
 
 	logger.Debug(GuildID)
 	logger.Debug(BotToken)
@@ -218,5 +221,6 @@ func loadEnvironments() {
 	logger.Debug(ModerationChannelName)
 	logger.Debug(misskeyToken)
 	logger.Debug(misskeyHost)
+	logger.Debug(isDebug)
 
 }

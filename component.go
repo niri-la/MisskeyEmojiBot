@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"os"
 	"strconv"
@@ -261,13 +262,15 @@ func newEmojiComponent() {
 			emoji.IsRequested = true
 
 			sendDirectMessage(*emoji, "--- 申請内容 "+emoji.ID+"---\n名前: "+emoji.Name+"\nCategory: "+
-				emoji.Category+"\n"+"tag"+emoji.Tag+"\n"+"isNSFW:"+strconv.FormatBool(emoji.IsSensitive)+"\n---")
+				emoji.Category+"\n"+"tag:"+emoji.Tag+"\n"+"License:"+emoji.License+"\n"+"isNSFW:"+strconv.FormatBool(emoji.IsSensitive)+"\n---")
 
 			send, err := s.ChannelMessageSend(moderationChannel.ID, ":作成者: "+i.Member.User.Username+"\n"+
 				":: ID "+emoji.ID)
 			if err != nil {
 				return
 			}
+
+			emoji.ModerationMessageID = send.ID
 
 			thread, err := s.MessageThreadStartComplex(moderationChannel.ID, send.ID, &discordgo.ThreadStart{
 				Name:                emoji.ID,
@@ -290,6 +293,7 @@ func newEmojiComponent() {
 				"Name: "+emoji.Name+"\n"+
 					"Category: "+emoji.Category+"\n"+
 					"Tag: "+emoji.Tag+"\n"+
+					"License: "+emoji.License+"\n"+
 					"isNSFW: "+strconv.FormatBool(emoji.IsSensitive)+"\n")
 
 			file, err := os.Open(emoji.FilePath)
@@ -423,7 +427,7 @@ func newEmojiChannelComponent() {
 			})
 
 			if err != nil {
-				returnFailedMessage(s, i, "Could not create emoji channel")
+				returnFailedMessage(s, i, fmt.Sprintf("Could not set emoji channel permission: %v", err))
 				emoji.abort()
 				return
 			}
