@@ -181,6 +181,7 @@ func init() {
 			"Name: "+emoji.Name+"\n"+
 			"Category: "+emoji.Category+"\n"+
 			"Tag: "+emoji.Tag+"\n"+
+			"License: "+emoji.License+"\n"+
 			"isNSFW: "+strconv.FormatBool(emoji.IsSensitive)+"\n")
 		s.ChannelMessageSendComplex(cID,
 			&discordgo.MessageSend{
