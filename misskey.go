@@ -3,19 +3,17 @@ package main
 import (
 	"github.com/sirupsen/logrus"
 	"github.com/yitsushi/go-misskey"
-	"github.com/yitsushi/go-misskey/core"
 	"github.com/yitsushi/go-misskey/models"
 	"github.com/yitsushi/go-misskey/services/admin/emoji"
 	"github.com/yitsushi/go-misskey/services/drive/files"
 	"github.com/yitsushi/go-misskey/services/drive/folders"
 	"github.com/yitsushi/go-misskey/services/notes"
 	"io"
-	"log"
 	"os"
 	"strings"
 )
 
-func uploadToMisskey(e Emoji) bool {
+func uploadToMisskey(e Emoji) error {
 	client, err := misskey.NewClientWithOptions(
 		misskey.WithAPIToken(misskeyToken),
 		misskey.WithBaseURL("https", misskeyHost, ""),
@@ -23,26 +21,27 @@ func uploadToMisskey(e Emoji) bool {
 	)
 
 	if err != nil {
-		log.Println("[ERROR] Could not connect to misskey")
+		return err
 	}
 
 	file, err := os.Open(e.FilePath)
+
 	if err != nil {
-		log.Printf("[ERROR] file not found %s", e.FilePath)
-		return false
+		return err
 	}
+
 	defer file.Close()
 
 	fileBytes, err := io.ReadAll(file)
+
 	if err != nil {
-		log.Printf("[ERROR] file read error %s", e.FilePath)
-		return false
+		return err
 	}
 
 	folder, err := getFolder("Emoji", client)
+
 	if err != nil {
-		log.Printf("[ERROR] folder error %s", err)
-		return false
+		return err
 	}
 
 	drive, err := client.Drive().File().Create(files.CreateRequest{
@@ -54,15 +53,8 @@ func uploadToMisskey(e Emoji) bool {
 	})
 
 	if err != nil {
-		log.Printf("[Misskey] [Drive/File/Create] %s", err)
-		return false
+		return err
 	}
-
-	log.Printf(
-		"[Misskey] [Drive/File/Create] %s file uploaded. (%s)",
-		core.StringValue(drive.Name),
-		drive.ID,
-	)
 
 	add, err := client.Admin().Emoji().Add(emoji.AddRequest{
 		Name:   e.Name,
@@ -70,11 +62,8 @@ func uploadToMisskey(e Emoji) bool {
 	})
 
 	if err != nil {
-		log.Printf("[Admin/Emoji/Add] %s", err)
-		return false
+		return err
 	}
-
-	log.Printf("[Admin/Emoji/Add] %s", add)
 
 	err = client.Admin().Emoji().Update(emoji.UpdateRequest{
 		ID:                                      add,
@@ -88,15 +77,12 @@ func uploadToMisskey(e Emoji) bool {
 	})
 
 	if err != nil {
-		log.Printf("[Admin/Emoji/Update] %s", err)
-		return false
+		return err
 	}
 
 	e.IsAccepted = true
 
-	log.Printf("[Admin/Emoji/Update] Update completed: %s", e.Name)
-
-	return true
+	return nil
 }
 
 func getFolder(folderName string, client *misskey.Client) (models.Folder, error) {
@@ -110,13 +96,14 @@ func getFolder(folderName string, client *misskey.Client) (models.Folder, error)
 	create, err := client.Drive().Folder().Create(folders.CreateRequest{
 		Name: folderName,
 	})
+
 	if err != nil {
 		return models.Folder{}, err
 	}
 	return create, nil
 }
 
-func note(message notes.CreateRequest) {
+func note(message notes.CreateRequest) error {
 	client, err := misskey.NewClientWithOptions(
 		misskey.WithAPIToken(misskeyToken),
 		misskey.WithBaseURL("https", misskeyHost, ""),
@@ -124,16 +111,19 @@ func note(message notes.CreateRequest) {
 	)
 
 	if err != nil {
-		log.Println("[ERROR] Could not connect to misskey")
+		return err
 	}
 
 	response, err := client.Notes().Create(message)
 
 	if err != nil {
-		log.Printf("[Notes] Error happened: %s", err)
-		return
+		return err
 	}
 
-	log.Println("Created note " + response.CreatedNote.ID)
-
+	logger.WithFields(logrus.Fields{
+		"event":   "misskey",
+		"id":      response.CreatedNote.ID,
+		"message": message,
+	}).Debug("note complete.")
+	return nil
 }
