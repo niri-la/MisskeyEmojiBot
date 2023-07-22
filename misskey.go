@@ -70,7 +70,7 @@ func uploadToMisskey(e *Emoji) error {
 		Name:                                    e.Name,
 		Category:                                e.Category,
 		Aliases:                                 strings.Split(e.Tag, " "),
-		License:                                 "",
+		License:                                 e.License,
 		IsSensitive:                             e.IsSensitive,
 		LocalOnly:                               false,
 		RoleIdsThatCanBeUsedThisEmojiAsReaction: []string{},
