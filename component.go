@@ -262,7 +262,8 @@ func newEmojiComponent() {
 			emoji.IsRequested = true
 
 			sendDirectMessage(*emoji, "--- 申請内容 "+emoji.ID+"---\n名前: "+emoji.Name+"\nCategory: "+
-				emoji.Category+"\n"+"tag:"+emoji.Tag+"\n"+"License:"+emoji.License+"\n"+"isNSFW:"+strconv.FormatBool(emoji.IsSensitive)+"\n---")
+				emoji.Category+"\n"+"tag:"+emoji.Tag+"\n"+"License:"+emoji.License+"\n"+"isNSFW:"+strconv.FormatBool(emoji.IsSensitive)+"\n"+
+				"備考: "+emoji.Other+"\n---")
 
 			send, err := s.ChannelMessageSend(moderationChannel.ID, ":作成者: "+i.Member.User.Username+"\n"+
 				":: ID "+emoji.ID)
@@ -280,10 +281,14 @@ func newEmojiComponent() {
 			})
 
 			logger.WithFields(logrus.Fields{
-				"user":    i.Member.User.Username,
-				"channel": channel.Name,
-				"id":      emoji.ID,
-				"name":    emoji.Name,
+				"user":     i.Member.User.Username,
+				"channel":  channel.Name,
+				"id":       emoji.ID,
+				"name":     emoji.Name,
+				"tag":      emoji.Tag,
+				"category": emoji.Category,
+				"license":  emoji.License,
+				"other":    emoji.Other,
 			}).Info("Submit Request.")
 
 			s.ChannelMessageSend(thread.ID, ":---\n"+
@@ -294,6 +299,7 @@ func newEmojiComponent() {
 					"Category: "+emoji.Category+"\n"+
 					"Tag: "+emoji.Tag+"\n"+
 					"License: "+emoji.License+"\n"+
+					"Other: "+emoji.Other+"\n"+
 					"isNSFW: "+strconv.FormatBool(emoji.IsSensitive)+"\n")
 
 			file, err := os.Open(emoji.FilePath)

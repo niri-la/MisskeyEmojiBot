@@ -25,8 +25,9 @@ var workflow = map[int]string{
 	3: "Category",
 	4: "Tag",
 	5: "License",
-	6: "Nsfw",
-	7: "Check",
+	6: "Other",
+	7: "Nsfw",
+	8: "Check",
 }
 
 var request = make(map[string]RequestProcessor)
@@ -124,7 +125,7 @@ func init() {
 			IsSuccess: true,
 		}
 
-		_, err := s.ChannelMessageSend(cID, ":: 備考があれば記載してください。特にない場合は`なし`と入力してください。(misskeyではLicenseに記載されます。)")
+		_, err := s.ChannelMessageSend(cID, ":: ライセンスがあれば記載してください。特にない場合は`なし`と入力してください。")
 		if err != nil {
 			logger.WithFields(logrus.Fields{
 				"user":  emoji.RequestUser,
@@ -134,6 +135,25 @@ func init() {
 		}
 
 		emoji.RequestState = "License"
+
+		return response
+	}
+	request["Other"] = func(emoji *Emoji, s *discordgo.Session, cID string) Response {
+
+		response := Response{
+			IsSuccess: true,
+		}
+
+		_, err := s.ChannelMessageSend(cID, ":: 備考があれば記載してください。特にない場合は`なし`と入力してください。")
+		if err != nil {
+			logger.WithFields(logrus.Fields{
+				"user":  emoji.RequestUser,
+				"emoji": emoji.ID,
+			}).Error(err)
+			return Response{IsSuccess: false}
+		}
+
+		emoji.RequestState = "Other"
 
 		return response
 	}
@@ -236,7 +256,7 @@ func init() {
 				"id":         emoji.ID,
 				"user":       m.Author.Username,
 				"channel id": send.ChannelID,
-			}).Debug("Array length shortage error.")
+			}).Warn("Array length shortage error.")
 			return response
 		}
 
@@ -287,7 +307,7 @@ func init() {
 				"id":    emoji.ID,
 				"user":  m.Member.User,
 				"name":  emoji.Name,
-			}).Debug("Emoji Downloaded")
+			}).Trace("Emoji Downloaded")
 
 			file, err := os.Open(emoji.FilePath)
 			if err != nil {
@@ -350,7 +370,7 @@ func init() {
 			"user":     m.Member.User,
 			"name":     emoji.Name,
 			"category": emoji.Category,
-		}).Debug("Set emoji category.")
+		}).Trace("Set emoji category.")
 
 		return response
 	}
@@ -379,7 +399,7 @@ func init() {
 			"user":  m.Member.User,
 			"name":  emoji.Name,
 			"tag":   emoji.Tag,
-		}).Debug("Set emoji tag.")
+		}).Trace("Set emoji tag.")
 
 		return response
 	}
@@ -389,14 +409,16 @@ func init() {
 			IsSuccess: false,
 		}
 
-		s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+m.Content+"` ]")
+		emoji.ResponseState = "Other"
+		input := m.Content
+		if input == "なし" {
+			input = ""
+		}
+		emoji.License = input
+
+		s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+input+"` ]")
 		s.ChannelMessageSend(m.ChannelID, ":---")
 
-		emoji.ResponseState = "License"
-		emoji.License = m.Content
-		if m.Content == "なし" {
-			emoji.License = ""
-		}
 		response.IsSuccess = true
 		response.NextState = response.NextState + 1
 
@@ -406,7 +428,36 @@ func init() {
 			"user":  m.Member.User,
 			"name":  emoji.Name,
 			"tag":   emoji.Tag,
-		}).Debug("Set emoji license.")
+		}).Trace("Set emoji license.")
+
+		return response
+	}
+	response["Other"] = func(emoji *Emoji, s *discordgo.Session, m *discordgo.MessageCreate) Response {
+
+		response := Response{
+			IsSuccess: false,
+		}
+
+		emoji.ResponseState = "Other"
+		input := m.Content
+		if input == "なし" {
+			input = ""
+		}
+		emoji.Other = input
+
+		s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+input+"` ]")
+		s.ChannelMessageSend(m.ChannelID, ":---")
+
+		response.IsSuccess = true
+		response.NextState = response.NextState + 1
+
+		logger.WithFields(logrus.Fields{
+			"event": "emoji-other",
+			"id":    emoji.ID,
+			"user":  m.Member.User,
+			"name":  emoji.Name,
+			"tag":   emoji.Tag,
+		}).Trace("Set emoji license.")
 
 		return response
 	}
