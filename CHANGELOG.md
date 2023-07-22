@@ -15,6 +15,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.3.0] - 2023-07-22
+
+### Changed
+- Change channel to thread [`#60`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/60)
+
+### Fixed
+- Fixed responce state [`#59`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/59)
+- Fixed properly reflect values [`61`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/61)
+
 ## [1.2.0] - 2023-07-22
 
 ### Changed
