@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-func uploadToMisskey(e Emoji) error {
+func uploadToMisskey(e *Emoji) error {
 	client, err := misskey.NewClientWithOptions(
 		misskey.WithAPIToken(misskeyToken),
 		misskey.WithBaseURL("https", misskeyHost, ""),

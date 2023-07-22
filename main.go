@@ -155,7 +155,7 @@ func main() {
 
 	defer Session.Close()
 
-	ticker := time.NewTicker(24 * time.Hour)
+	ticker := time.NewTicker(12 * time.Hour)
 	go func() {
 		for {
 			select {

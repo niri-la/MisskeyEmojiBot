@@ -595,14 +595,14 @@ func emojiModerationReaction(s *discordgo.Session, m *discordgo.MessageReactionA
 	emoji.DisapproveCount = dsCount
 
 	if emoji.DisapproveCount-1 >= roleCount || (isDebug && emoji.DisapproveCount-1 >= 1) {
-		disapprove(*emoji)
+		emoji.disapprove()
 		s.ChannelMessageSend(m.ChannelID, "申請は却下されました")
 		closeThread(m.ChannelID, emoji.ModerationMessageID)
 		return
 	}
 
 	if emoji.ApproveCount-1 >= roleCount || (isDebug && emoji.ApproveCount-1 >= 1) {
-		approve(*emoji)
+		emoji.approve()
 		s.ChannelMessageSend(m.ChannelID, "絵文字はアップロードされました")
 		closeThread(m.ChannelID, emoji.ModerationMessageID)
 		return
