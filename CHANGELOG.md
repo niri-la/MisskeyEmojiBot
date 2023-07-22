@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.2.0] - 2023-07-22
+
+### Changed
+- Separation of licenses and remarks [`#54`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/55)
+
+### Fixed
+- Change logger level timing [`#57`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/57)
+
 ## [1.1.0] - 2023-07-22
 
 ### Added
