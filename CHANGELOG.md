@@ -15,6 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.3.1] - 2023-07-22
+
+### Fixed
+- fixed message when request completed [`#62`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/62)
+- fixed nsfw button [`#66`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/66)
+- fixed license field [`#67`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/67)
+
 ## [1.3.0] - 2023-07-22
 
 ### Changed
