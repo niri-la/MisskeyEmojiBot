@@ -161,7 +161,9 @@ func nsfwComponent() {
 				},
 			})
 			emoji.IsSensitive = true
-			ProcessRequest(emoji, s, i.ChannelID)
+			emoji.RequestState = "Nsfw"
+			emoji.ResponseState = "Nsfw"
+			ProcessNextRequest(emoji, s, i.ChannelID)
 
 		},
 	)
@@ -187,7 +189,6 @@ func nsfwComponent() {
 					"name":  emoji.Name,
 				}).Error(err)
 				return
-
 			}
 
 			if emoji.IsRequested {
@@ -210,7 +211,9 @@ func nsfwComponent() {
 			})
 
 			emoji.IsSensitive = false
-			ProcessRequest(emoji, s, i.ChannelID)
+			emoji.RequestState = "Nsfw"
+			emoji.ResponseState = "Nsfw"
+			ProcessNextRequest(emoji, s, i.ChannelID)
 
 		},
 	)
