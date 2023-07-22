@@ -46,11 +46,6 @@ func init() {
 
 func init() {
 	loadEnvironments()
-	if isDebug {
-		logger.SetLevel(logrus.TraceLevel)
-	} else {
-		logger.SetLevel(logrus.InfoLevel)
-	}
 	var err error
 	Session, err = discordgo.New("Bot " + BotToken)
 	if err != nil {
@@ -74,6 +69,11 @@ func init() {
 			}).Panic(err)
 		}
 		registeredCommands[i] = cmd
+	}
+	if isDebug {
+		logger.SetLevel(logrus.TraceLevel)
+	} else {
+		logger.SetLevel(logrus.InfoLevel)
 	}
 }
 
@@ -109,7 +109,7 @@ func main() {
 
 		channel, _ := s.Channel(m.ChannelID)
 
-		if !strings.Contains(channel.Name, "emoji-") {
+		if !strings.Contains(channel.Name, "Emoji-") {
 			return
 		}
 
