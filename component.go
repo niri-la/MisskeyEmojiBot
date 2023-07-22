@@ -390,50 +390,18 @@ func newEmojiChannelComponent() {
 			Name: "new_emoji_channel",
 		},
 		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			parent, err := s.Channel(i.ChannelID)
-
-			if err != nil {
-				returnFailedMessage(s, i, "Could not retrieve channel")
-				return
-			}
-
-			overwrites := []*discordgo.PermissionOverwrite{
-				{
-					ID:   i.Member.User.ID,
-					Type: discordgo.PermissionOverwriteTypeMember,
-					Allow: discordgo.PermissionViewChannel |
-						discordgo.PermissionSendMessages,
-				},
-				{
-					ID:   ModeratorID,
-					Type: discordgo.PermissionOverwriteTypeRole,
-					Allow: discordgo.PermissionViewChannel |
-						discordgo.PermissionSendMessages,
-				},
-				{
-					ID:   BotID,
-					Type: discordgo.PermissionOverwriteTypeRole,
-					Allow: discordgo.PermissionViewChannel |
-						discordgo.PermissionSendMessages,
-				},
-				{
-					ID:   i.GuildID,
-					Type: discordgo.PermissionOverwriteTypeRole,
-					Deny: discordgo.PermissionViewChannel,
-				},
-			}
-
 			emoji := newEmojiRequest(i.Member.User.ID)
 
-			channel, err := s.GuildChannelCreateComplex(GuildID, discordgo.GuildChannelCreateData{
-				Type:                 discordgo.ChannelTypeGuildText,
-				Name:                 "Emoji-" + emoji.ID,
-				ParentID:             parent.ParentID,
-				PermissionOverwrites: overwrites,
+			channel, err := s.ThreadStartComplex(i.ChannelID, &discordgo.ThreadStart{
+				Name:                "Emoji-" + emoji.ID,
+				AutoArchiveDuration: 60,
+				Invitable:           false,
+				RateLimitPerUser:    10,
+				Type:                discordgo.ChannelTypeGuildPrivateThread,
 			})
 
 			if err != nil {
-				returnFailedMessage(s, i, fmt.Sprintf("Could not set emoji channel permission: %v", err))
+				returnFailedMessage(s, i, fmt.Sprintf("Could not create emoji channel: %v", err))
 				emoji.abort()
 				return
 			}
@@ -446,9 +414,15 @@ func newEmojiChannelComponent() {
 				},
 			})
 
+			user, err := s.User(emoji.RequestUser)
+			if err != nil {
+				returnFailedMessage(s, i, fmt.Sprintf("Could not find user: %v", err))
+				return
+			}
+
 			s.ChannelMessageSend(
 				channel.ID,
-				": 絵文字申請チャンネルへようこそ！\n"+
+				":: 絵文字申請チャンネルへようこそ！ "+user.Mention()+"\n"+
 					":---\n"+
 					" ここでは絵文字に関する各種登録を行います。表示されるメッセージに従って入力を行ってください！\n"+
 					" 申請は絵文字Botが担当させていただきます。Botが一度非アクティブになると設定は初期化されますのでご注意ください！\n"+
