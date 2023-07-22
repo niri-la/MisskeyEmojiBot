@@ -47,7 +47,7 @@ func init() {
 func init() {
 	loadEnvironments()
 	if isDebug {
-		logger.SetLevel(logrus.DebugLevel)
+		logger.SetLevel(logrus.TraceLevel)
 	} else {
 		logger.SetLevel(logrus.InfoLevel)
 	}

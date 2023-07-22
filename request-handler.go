@@ -202,6 +202,7 @@ func init() {
 			"Category: "+emoji.Category+"\n"+
 			"Tag: "+emoji.Tag+"\n"+
 			"License: "+emoji.License+"\n"+
+			"Other: "+emoji.Other+"\n"+
 			"isNSFW: "+strconv.FormatBool(emoji.IsSensitive)+"\n")
 		s.ChannelMessageSendComplex(cID,
 			&discordgo.MessageSend{
@@ -409,7 +410,7 @@ func init() {
 			IsSuccess: false,
 		}
 
-		emoji.ResponseState = "Other"
+		emoji.ResponseState = "License"
 		input := m.Content
 		if input == "なし" {
 			input = ""
