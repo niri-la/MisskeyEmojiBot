@@ -65,7 +65,7 @@ func GetEmoji(id string) (*Emoji, error) {
 	return nil, errors.New("emoji not found")
 }
 
-func approve(emoji Emoji) {
+func (emoji *Emoji) approve() {
 	if emoji.IsAccepted {
 		u, _ := Session.User(emoji.RequestUser)
 		logger.WithFields(debug.Fields{
@@ -77,19 +77,19 @@ func approve(emoji Emoji) {
 	}
 	uploadToMisskey(emoji)
 	emoji.IsFinish = true
-	sendDirectMessage(emoji, "申請された絵文字は登録されました。"+emoji.ID)
-	deleteChannel(emoji)
+	sendDirectMessage(*emoji, "申請された絵文字は登録されました。"+emoji.ID)
+	deleteChannel(*emoji)
 }
 
-func disapprove(emoji Emoji) {
+func (emoji *Emoji) disapprove() {
 	if emoji.IsAccepted {
 		return
 	}
 
 	emoji.IsAccepted = false
 	emoji.IsFinish = true
-	sendDirectMessage(emoji, "申請された絵文字は却下されました。 "+emoji.ID)
-	deleteChannel(emoji)
+	sendDirectMessage(*emoji, "申請された絵文字は却下されました。 "+emoji.ID)
+	deleteChannel(*emoji)
 }
 
 func deleteChannel(emoji Emoji) {
@@ -125,7 +125,7 @@ func emojiReconstruction() []Emoji {
 		}
 	}
 	emojiProcessList = reconstruction
-	return reconstruction
+	return accepted
 }
 
 func noteEmojiAdded(emojis []Emoji) {
@@ -144,24 +144,24 @@ func noteEmojiAdded(emojis []Emoji) {
 	})
 }
 
-func (e Emoji) reset() {
-	e.RequestState = workflow[0]
-	e.ResponseState = workflow[0]
-	e.IsSensitive = false
-	e.IsAccepted = false
-	e.IsRequested = false
+func (emoji *Emoji) reset() {
+	emoji.RequestState = workflow[0]
+	emoji.ResponseState = workflow[0]
+	emoji.IsSensitive = false
+	emoji.IsAccepted = false
+	emoji.IsRequested = false
 }
 
-func (e Emoji) abort() {
-	remove(e)
-	e.reset()
-	e.IsFinish = true
+func (emoji *Emoji) abort() {
+	remove(*emoji)
+	emoji.reset()
+	emoji.IsFinish = true
 }
 
 func remove(val Emoji) {
 	var newSlice []Emoji
 	for _, v := range emojiProcessList {
-		if v != val {
+		if v.ID != val.ID {
 			newSlice = append(newSlice, v)
 		}
 	}
