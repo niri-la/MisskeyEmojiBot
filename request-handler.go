@@ -472,7 +472,7 @@ func init() {
 	}
 }
 
-func ProcessRequest(emoji *Emoji, s *discordgo.Session, id string) bool {
+func ProcessNextRequest(emoji *Emoji, s *discordgo.Session, id string) bool {
 	requestIndex := reverseWorkflowMap[emoji.RequestState]
 	logger.WithFields(logrus.Fields{
 		"emoji id":       emoji.ID,
