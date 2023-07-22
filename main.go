@@ -34,23 +34,23 @@ var moderationChannel *discordgo.Channel
 var messageJp string
 
 func init() {
-	loadEnvironments()
+
 	logger = logrus.New()
 	// Log as JSON instead of the default ASCII formatter.
 	//debug.SetFormatter(&debug.TextFormatter{})
 	logger.SetOutput(os.Stdout)
-	if isDebug {
-		logger.SetLevel(logrus.DebugLevel)
-	} else {
-		logger.SetLevel(logrus.InfoLevel)
-	}
 	logger.SetFormatter(&logrus.TextFormatter{
 		ForceColors: true,
 	})
 }
 
 func init() {
-
+	loadEnvironments()
+	if isDebug {
+		logger.SetLevel(logrus.DebugLevel)
+	} else {
+		logger.SetLevel(logrus.InfoLevel)
+	}
 	var err error
 	Session, err = discordgo.New("Bot " + BotToken)
 	if err != nil {
