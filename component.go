@@ -280,7 +280,6 @@ func newEmojiComponent() {
 				Name:                emoji.ID,
 				AutoArchiveDuration: 60,
 				Invitable:           false,
-				RateLimitPerUser:    10,
 			})
 
 			logger.WithFields(logrus.Fields{
@@ -399,7 +398,6 @@ func newEmojiChannelComponent() {
 				Name:                "Emoji-" + emoji.ID,
 				AutoArchiveDuration: 60,
 				Invitable:           false,
-				RateLimitPerUser:    10,
 				Type:                discordgo.ChannelTypeGuildPrivateThread,
 			})
 
