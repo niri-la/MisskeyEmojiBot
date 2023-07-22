@@ -33,6 +33,7 @@ type Emoji struct {
 	Category            string `json:"category"`
 	Tag                 string `json:"tag"`
 	License             string `json:"license"`
+	Other               string `json:"other"`
 	FilePath            string `json:"filepath"`
 	IsSensitive         bool   `json:"isSensitive"`
 	RequestUser         string `json:"requestUser"`
