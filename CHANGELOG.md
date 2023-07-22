@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.3.2] - 2023-07-22
+
+### Changed
+- Change rate-limit [`#69`](https://github.com/niwaniwa/MisskeyEmojiBot/pull/69)
+
 ## [1.3.1] - 2023-07-22
 
 ### Fixed
