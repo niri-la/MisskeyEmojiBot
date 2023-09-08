@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/google/uuid"
 	debug "github.com/sirupsen/logrus"
@@ -44,6 +45,7 @@ type Emoji struct {
 	IsFinish            bool   `json:"isFinish"`
 	ModerationMessageID string `json:"moderationMessageID"`
 	UserThreadID        string `json:"userThreadID"`
+	EmojiID             string `json:"emojiID"`
 }
 
 func newEmojiRequest(user string) *Emoji {
@@ -69,16 +71,26 @@ func (emoji *Emoji) approve() {
 	if emoji.IsAccepted {
 		u, _ := Session.User(emoji.RequestUser)
 		logger.WithFields(debug.Fields{
-			"event": "nsfw",
+			"event": "accept",
 			"id":    emoji.ID,
 			"user":  u.Username,
 			"name":  emoji.Name,
 		}).Warn("already uploaded")
 	}
-	uploadToMisskey(emoji)
+	id, err := uploadToMisskey(emoji)
+	if err != nil {
+		logger.WithFields(debug.Fields{
+			"event": "accept",
+			"id":    emoji.ID,
+			"name":  emoji.Name,
+		}).Fatal("Fatal Error")
+		return
+	}
+	emoji.EmojiID = id
 	emoji.IsFinish = true
 	sendDirectMessage(*emoji, "申請された絵文字は登録されました。"+emoji.ID)
 	deleteChannel(*emoji)
+	emoji.save()
 }
 
 func (emoji *Emoji) disapprove() {
@@ -90,6 +102,11 @@ func (emoji *Emoji) disapprove() {
 	emoji.IsFinish = true
 	sendDirectMessage(*emoji, "申請された絵文字は却下されました。 "+emoji.ID)
 	deleteChannel(*emoji)
+}
+
+func (emoji *Emoji) save() {
+	jsonData, _ := json.MarshalIndent(emoji, "", "  ")
+	_ = os.WriteFile(emoji.ID+".json", jsonData, 0644)
 }
 
 func deleteChannel(emoji Emoji) {

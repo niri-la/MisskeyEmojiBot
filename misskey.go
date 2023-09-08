@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-func uploadToMisskey(e *Emoji) error {
+func uploadToMisskey(e *Emoji) (string, error) {
 	client, err := misskey.NewClientWithOptions(
 		misskey.WithAPIToken(misskeyToken),
 		misskey.WithBaseURL("https", misskeyHost, ""),
@@ -21,13 +21,13 @@ func uploadToMisskey(e *Emoji) error {
 	)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	file, err := os.Open(e.FilePath)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	defer file.Close()
@@ -35,13 +35,13 @@ func uploadToMisskey(e *Emoji) error {
 	fileBytes, err := io.ReadAll(file)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	folder, err := getFolder("Emoji", client)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	drive, err := client.Drive().File().Create(files.CreateRequest{
@@ -53,7 +53,7 @@ func uploadToMisskey(e *Emoji) error {
 	})
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	add, err := client.Admin().Emoji().Add(emoji.AddRequest{
@@ -62,7 +62,7 @@ func uploadToMisskey(e *Emoji) error {
 	})
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	err = client.Admin().Emoji().Update(emoji.UpdateRequest{
@@ -77,12 +77,12 @@ func uploadToMisskey(e *Emoji) error {
 	})
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	e.IsAccepted = true
 
-	return nil
+	return add, nil
 }
 
 func getFolder(folderName string, client *misskey.Client) (models.Folder, error) {

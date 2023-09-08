@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added save function [`#73`](https://github.com/niwaniwa/MisskeyEmojiBot/issues/73)
 
 ### Changed
 
