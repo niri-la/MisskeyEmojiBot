@@ -2,16 +2,18 @@ package main
 
 import (
 	"errors"
-	"github.com/google/uuid"
-	debug "github.com/sirupsen/logrus"
-	"github.com/yitsushi/go-misskey/core"
-	"github.com/yitsushi/go-misskey/models"
-	"github.com/yitsushi/go-misskey/services/notes"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
+
+	"github.com/google/uuid"
+	debug "github.com/sirupsen/logrus"
+	"github.com/yitsushi/go-misskey/core"
+	"github.com/yitsushi/go-misskey/models"
+	"github.com/yitsushi/go-misskey/services/notes"
 )
 
 var (
@@ -25,25 +27,26 @@ var (
 )
 
 type Emoji struct {
-	ID                  string `json:"id"`
-	ChannelID           string `json:"channelID"`
-	ResponseState       string `json:"responseState"`
-	RequestState        string `json:"requestState"`
-	Name                string `json:"name"`
-	Category            string `json:"category"`
-	Tag                 string `json:"tag"`
-	License             string `json:"license"`
-	Other               string `json:"other"`
-	FilePath            string `json:"filepath"`
-	IsSensitive         bool   `json:"isSensitive"`
-	RequestUser         string `json:"requestUser"`
-	ApproveCount        int    `json:"approveCount"`
-	DisapproveCount     int    `json:"disapproveCount"`
-	IsRequested         bool   `json:"isRequested"`
-	IsAccepted          bool   `json:"isAccepted"`
-	IsFinish            bool   `json:"isFinish"`
-	ModerationMessageID string `json:"moderationMessageID"`
-	UserThreadID        string `json:"userThreadID"`
+	ID                  string    `json:"id"`
+	ChannelID           string    `json:"channelID"`
+	ResponseState       string    `json:"responseState"`
+	RequestState        string    `json:"requestState"`
+	Name                string    `json:"name"`
+	Category            string    `json:"category"`
+	Tag                 string    `json:"tag"`
+	License             string    `json:"license"`
+	Other               string    `json:"other"`
+	FilePath            string    `json:"filepath"`
+	IsSensitive         bool      `json:"isSensitive"`
+	RequestUser         string    `json:"requestUser"`
+	ApproveCount        int       `json:"approveCount"`
+	DisapproveCount     int       `json:"disapproveCount"`
+	IsRequested         bool      `json:"isRequested"`
+	IsAccepted          bool      `json:"isAccepted"`
+	IsFinish            bool      `json:"isFinish"`
+	ModerationMessageID string    `json:"moderationMessageID"`
+	UserThreadID        string    `json:"userThreadID"`
+	StartAt             time.Time `json:"startAt"`
 }
 
 func newEmojiRequest(user string) *Emoji {
@@ -52,6 +55,7 @@ func newEmojiRequest(user string) *Emoji {
 		ID: id.String(),
 	}
 	emoji.RequestUser = user
+	emoji.StartAt = time.Now()
 	emojiProcessList = append(emojiProcessList, emoji)
 	return &emoji
 }
@@ -77,7 +81,7 @@ func (emoji *Emoji) approve() {
 	}
 	uploadToMisskey(emoji)
 	emoji.IsFinish = true
-	sendDirectMessage(*emoji, "申請された絵文字は登録されました。"+emoji.ID)
+	sendDirectMessage(*emoji, "申請された絵文字は登録されました。")
 	deleteChannel(*emoji)
 }
 
@@ -88,7 +92,7 @@ func (emoji *Emoji) disapprove() {
 
 	emoji.IsAccepted = false
 	emoji.IsFinish = true
-	sendDirectMessage(*emoji, "申請された絵文字は却下されました。 "+emoji.ID)
+	sendDirectMessage(*emoji, "申請された絵文字は却下されました。")
 	deleteChannel(*emoji)
 }
 
