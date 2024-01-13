@@ -617,23 +617,3 @@ func emojiModerationReaction(s *discordgo.Session, m *discordgo.MessageReactionA
 	}
 
 }
-
-func closeThread(threadID string, messageID string) {
-	channel, _ := Session.Channel(threadID)
-	if !channel.IsThread() {
-		return
-	}
-	archived := true
-	locked := true
-	t, err := Session.ChannelEditComplex(channel.ID, &discordgo.ChannelEdit{
-		Archived: &archived,
-		Locked:   &locked,
-	})
-
-	err = Session.ChannelMessageDelete(t.ParentID, messageID)
-	if err != nil {
-		logger.WithFields(logrus.Fields{
-			"event": "delete-message",
-		}).Error(err)
-	}
-}

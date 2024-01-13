@@ -1,6 +1,9 @@
 package main
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"github.com/bwmarrin/discordgo"
+	"github.com/sirupsen/logrus"
+)
 
 func countMembersWithRole(s *discordgo.Session, guildID string, roleID string) (int, error) {
 	members, err := s.GuildMembers(guildID, "", 1000)
@@ -19,4 +22,24 @@ func countMembersWithRole(s *discordgo.Session, guildID string, roleID string) (
 	}
 
 	return count, nil
+}
+
+func closeThread(threadID string, messageID string) {
+	channel, _ := Session.Channel(threadID)
+	if !channel.IsThread() {
+		return
+	}
+	archived := true
+	locked := true
+	t, err := Session.ChannelEditComplex(channel.ID, &discordgo.ChannelEdit{
+		Archived: &archived,
+		Locked:   &locked,
+	})
+
+	err = Session.ChannelMessageDelete(t.ParentID, messageID)
+	if err != nil {
+		logger.WithFields(logrus.Fields{
+			"event": "delete-message",
+		}).Error(err)
+	}
 }

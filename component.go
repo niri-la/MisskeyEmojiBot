@@ -20,6 +20,8 @@ func init() {
 	nsfwComponent()
 	newEmojiComponent()
 	newEmojiChannelComponent()
+	emojiCancelComponent()
+	deleteMessageComponent()
 }
 
 func addComponent(command *discordgo.ApplicationCommand, fn func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
@@ -267,7 +269,7 @@ func newEmojiComponent() {
 
 			sendDirectMessage(*emoji, "--- 申請内容 "+emoji.ID+"---\n名前: "+emoji.Name+"\nCategory: "+
 				emoji.Category+"\n"+"tag:"+emoji.Tag+"\n"+"License:"+emoji.License+"\n"+"isNSFW:"+strconv.FormatBool(emoji.IsSensitive)+"\n"+
-				"備考: "+emoji.Other+"\n URL: https://discordapp.com/channels/"+GuildID+"/"+emoji.ChannelID+"\n---")
+				"備考: "+emoji.Other+"\nURL: https://discordapp.com/channels/"+GuildID+"/"+emoji.ChannelID+"\n---")
 
 			send, err := s.ChannelMessageSend(moderationChannel.ID, ":作成者: "+i.Member.User.Username+"\n"+
 				":: ID "+emoji.ID)
@@ -430,9 +432,91 @@ func newEmojiChannelComponent() {
 					" 申請は絵文字Botが担当させていただきます。Botが一度非アクティブになると設定は初期化されますのでご注意ください！\n"+
 					":---\n",
 			)
+
+			s.ChannelMessageSendComplex(channel.ID,
+				&discordgo.MessageSend{
+					Content: "申請をキャンセルする場合は以下のボタンを押してください。\n申請後はキャンセルできませんのでご注意ください。\n",
+					Components: []discordgo.MessageComponent{
+						discordgo.ActionsRow{
+							Components: []discordgo.MessageComponent{
+								&discordgo.Button{
+									Label:    "申請をキャンセルする / Cancel Request",
+									CustomID: "cancel_request",
+									Style:    discordgo.DangerButton,
+									Emoji: discordgo.ComponentEmoji{
+										Name: "🗑️",
+									},
+								},
+							},
+						},
+					},
+				},
+			)
+
 			emoji, _ = GetEmoji(emoji.ID)
 			first(emoji, s, channel.ID)
 		},
 	)
 
+}
+
+func emojiCancelComponent() {
+	// cancel_request
+	addComponent(
+		&discordgo.ApplicationCommand{
+			Name: "cancel_request",
+		},
+		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			channel, _ := s.Channel(i.ChannelID)
+			emoji, err := GetEmoji(channel.Name[6:])
+			if err != nil {
+				s.ChannelMessageSend(
+					channel.ID,
+					"設定に失敗しました。管理者に問い合わせを行ってください。 #03a\n",
+				)
+
+				logger.WithFields(logrus.Fields{
+					"event": "cancel_request",
+					"id":    emoji.ID,
+					"user":  i.Member.User,
+					"name":  emoji.Name,
+				}).Error(err)
+				return
+			}
+
+			if emoji.IsRequested {
+				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Flags:   discordgo.MessageFlagsEphemeral,
+						Content: "既に申請は終了しています\n",
+					},
+				})
+				return
+			}
+
+			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Flags:   discordgo.MessageFlagsEphemeral,
+					Content: "リクエストをキャンセルしました。\n",
+				},
+			})
+			sendDirectMessage(*emoji, "申請された絵文字はキャンセルされました。: https://discordapp.com/channels/"+GuildID+"/"+i.ChannelID+" : ")
+			emoji.abort()
+			closeThread(channel.ID, emoji.ModerationMessageID)
+		},
+	)
+}
+
+func deleteMessageComponent() {
+	// delete-message
+	addComponent(
+		&discordgo.ApplicationCommand{
+			Name: "delete-message",
+		},
+		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+
+		},
+	)
 }
