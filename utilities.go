@@ -39,7 +39,7 @@ func closeThread(threadID string, messageID string) {
 	err = Session.ChannelMessageDelete(t.ParentID, messageID)
 	if err != nil {
 		logger.WithFields(logrus.Fields{
-			"event": "delete-message",
+			"event": "delete-thread-message",
 		}).Error(err)
 	}
 }

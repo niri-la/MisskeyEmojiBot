@@ -3,14 +3,15 @@ package main
 import (
 	_ "embed"
 	"fmt"
-	"github.com/bwmarrin/discordgo"
-	"github.com/joho/godotenv"
-	"github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/bwmarrin/discordgo"
+	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 )
 
 // Bot parameters
@@ -155,18 +156,7 @@ func main() {
 
 	defer Session.Close()
 
-	ticker := time.NewTicker(12 * time.Hour)
-	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				emoji := emojiReconstruction()
-				if len(emoji) != 0 {
-					noteEmojiAdded(emoji)
-				}
-			}
-		}
-	}()
+	addJob()
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
@@ -227,5 +217,45 @@ func loadEnvironments() {
 	logger.Debug(misskeyToken)
 	logger.Debug(misskeyHost)
 	logger.Debug(isDebug)
+
+}
+
+func addJob() {
+	ticker := time.NewTicker(12 * time.Hour)
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				emoji := emojiReconstruction()
+				if len(emoji) != 0 {
+					noteEmojiAdded(emoji)
+				}
+			}
+		}
+	}()
+
+	cleanRequest := time.NewTicker(12 * time.Hour)
+	go func() {
+		for {
+			select {
+			case <-cleanRequest.C:
+				var targetEmoji []Emoji
+				for _, emoji := range emojiProcessList {
+					if time.Since(emoji.StartAt) > 48*time.Hour && !emoji.IsRequested {
+						targetEmoji = append(targetEmoji, emoji)
+					}
+				}
+
+				for _, emoji := range targetEmoji {
+					emoji.abort()
+					deleteChannel(emoji)
+				}
+
+				if len(targetEmoji) != 0 {
+					logrus.Warn("delete emoji request : " + strconv.Itoa(len(targetEmoji)) + " emojis")
+				}
+			}
+		}
+	}()
 
 }

@@ -268,8 +268,6 @@ func init() {
 			}).Warn("Array length shortage error.")
 			return response
 		}
-
-		emoji.ChannelID = m.ChannelID
 		reg := regexp.MustCompile(`[^a-z0-9_]+`)
 		result := reg.ReplaceAllStringFunc(m.Content, func(s string) string {
 			return "_"

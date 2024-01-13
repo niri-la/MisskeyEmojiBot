@@ -454,6 +454,7 @@ func newEmojiChannelComponent() {
 			)
 
 			emoji, _ = GetEmoji(emoji.ID)
+			emoji.ChannelID = channel.ID
 			first(emoji, s, channel.ID)
 		},
 	)
@@ -502,18 +503,18 @@ func emojiCancelComponent() {
 					Content: "リクエストをキャンセルしました。\n",
 				},
 			})
-			sendDirectMessage(*emoji, "申請された絵文字はキャンセルされました。: https://discordapp.com/channels/"+GuildID+"/"+i.ChannelID+" : ")
+			sendDirectMessage(*emoji, "申請された絵文字はキャンセルされました。: ")
 			emoji.abort()
-			closeThread(channel.ID, emoji.ModerationMessageID)
+			deleteChannel(*emoji)
 		},
 	)
 }
 
 func deleteMessageComponent() {
-	// delete-message
+	// delete-thread-message
 	addComponent(
 		&discordgo.ApplicationCommand{
-			Name: "delete-message",
+			Name: "delete-thread-message",
 		},
 		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
