@@ -15,6 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.3.3] - 2024-01-13
+### Added
+- Add the URL of the application source from DM. [`#79`](https://github.com/niwaniwa/MisskeyEmojiBot/issues/79)
+- Add request cancel button. [`8e50ab0`](https://github.com/niwaniwa/MisskeyEmojiBot/commit/8e50ab092e383b31a2d52a64122ebf1c1fe5848e)
+- Delete threads of applications that have not been completed within a certain period of time. [`#71`](https://github.com/niwaniwa/MisskeyEmojiBot/issues/71)
+
+### Changed
+- Increase auto-hide time of threads. [`#75`](https://github.com/niwaniwa/MisskeyEmojiBot/issues/75)
+
+### Fixed
+- Fixed a problem where the part where pictograms had to be specified was blank. [`#76`](https://github.com/niwaniwa/MisskeyEmojiBot/issues/76)
+
 ## [1.3.2] - 2023-07-22
 
 ### Changed
