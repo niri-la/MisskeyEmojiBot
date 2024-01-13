@@ -267,7 +267,7 @@ func newEmojiComponent() {
 
 			sendDirectMessage(*emoji, "--- 申請内容 "+emoji.ID+"---\n名前: "+emoji.Name+"\nCategory: "+
 				emoji.Category+"\n"+"tag:"+emoji.Tag+"\n"+"License:"+emoji.License+"\n"+"isNSFW:"+strconv.FormatBool(emoji.IsSensitive)+"\n"+
-				"備考: "+emoji.Other+"\n---")
+				"備考: "+emoji.Other+"\n URL: https://discordapp.com/channels/"+GuildID+"/"+emoji.ChannelID+"\n---")
 
 			send, err := s.ChannelMessageSend(moderationChannel.ID, ":作成者: "+i.Member.User.Username+"\n"+
 				":: ID "+emoji.ID)
