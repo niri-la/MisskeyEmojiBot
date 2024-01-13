@@ -1,13 +1,14 @@
 package main
 
 import (
-	"github.com/bwmarrin/discordgo"
-	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/bwmarrin/discordgo"
+	"github.com/sirupsen/logrus"
 )
 
 type RequestProcessor func(*Emoji, *discordgo.Session, string) Response
@@ -204,7 +205,7 @@ func init() {
 			"License: "+emoji.License+"\n"+
 			"Other: "+emoji.Other+"\n"+
 			"isNSFW: "+strconv.FormatBool(emoji.IsSensitive)+"\n")
-		s.ChannelMessageSendComplex(cID,
+		_, err := s.ChannelMessageSendComplex(cID,
 			&discordgo.MessageSend{
 				Content: "以上で申請しますか?\n",
 				Components: []discordgo.MessageComponent{
@@ -223,7 +224,7 @@ func init() {
 								CustomID: "emoji_request_retry",
 								Style:    discordgo.DangerButton,
 								Emoji: discordgo.ComponentEmoji{
-									Name: "",
+									Name: "🗑️",
 								},
 							},
 						},
@@ -231,6 +232,13 @@ func init() {
 				},
 			},
 		)
+
+		logger.Error(err)
+
+		logger.WithFields(logrus.Fields{
+			"user":  emoji.RequestUser,
+			"emoji": emoji.ID,
+		}).Trace("Emoji Request Check")
 		emoji.RequestState = "Check"
 		return response
 	}
@@ -458,7 +466,7 @@ func init() {
 			"user":  m.Member.User,
 			"name":  emoji.Name,
 			"tag":   emoji.Tag,
-		}).Trace("Set emoji license.")
+		}).Trace("Set emoji Bikou.")
 
 		return response
 	}
