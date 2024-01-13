@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"os"
 	"strconv"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -396,7 +397,7 @@ func newEmojiChannelComponent() {
 
 			channel, err := s.ThreadStartComplex(i.ChannelID, &discordgo.ThreadStart{
 				Name:                "Emoji-" + emoji.ID,
-				AutoArchiveDuration: 60,
+				AutoArchiveDuration: 1440,
 				Invitable:           false,
 				Type:                discordgo.ChannelTypeGuildPrivateThread,
 			})
