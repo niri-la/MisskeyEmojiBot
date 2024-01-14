@@ -15,6 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.3.4] - 2024-01-14
+### Changed
+- Change message. [`#82`](https://github.com/niwaniwa/MisskeyEmojiBot/issues/82)
+
+### Fixed
+- Change the UUID version to v4. [`#18`](https://github.com/niwaniwa/MisskeyEmojiBot/issues/18)
+
 ## [1.3.3] - 2024-01-13
 ### Added
 - Add the URL of the application source from DM. [`#79`](https://github.com/niwaniwa/MisskeyEmojiBot/issues/79)
