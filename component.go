@@ -251,7 +251,7 @@ func newEmojiComponent() {
 
 			s.ChannelMessageSend(
 				channel.ID,
-				"申請をしました！\n"+
+				"## 申請をしました！\n"+
 					"申請結果については追ってDMでご連絡いたします。\n"+
 					"なお、申請結果について疑問がございましたら管理者へお問い合わせください！\n"+
 					"この度は申請いただき大変ありがとうございました。\n",
@@ -271,8 +271,7 @@ func newEmojiComponent() {
 				emoji.Category+"\n"+"tag:"+emoji.Tag+"\n"+"License:"+emoji.License+"\n"+"isNSFW:"+strconv.FormatBool(emoji.IsSensitive)+"\n"+
 				"備考: "+emoji.Other+"\nURL: https://discordapp.com/channels/"+GuildID+"/"+emoji.ChannelID+"\n---")
 
-			send, err := s.ChannelMessageSend(moderationChannel.ID, ":作成者: "+i.Member.User.Username+"\n"+
-				":: ID "+emoji.ID)
+			send, err := s.ChannelMessageSend(moderationChannel.ID, "## 申請 "+emoji.ID+"\n- 申請者: "+i.Member.User.Username+"\n"+"- 絵文字名: "+emoji.Name)
 			if err != nil {
 				return
 			}
@@ -296,16 +295,15 @@ func newEmojiComponent() {
 				"other":    emoji.Other,
 			}).Info("Submit Request.")
 
-			s.ChannelMessageSend(thread.ID, ":---\n"+
-				"Requested by "+i.Member.User.Username+"\n"+
-				":---\n")
+			s.ChannelMessageSend(thread.ID, "## 申請内容\n")
 			s.ChannelMessageSend(thread.ID,
-				"Name: "+emoji.Name+"\n"+
-					"Category: "+emoji.Category+"\n"+
-					"Tag: "+emoji.Tag+"\n"+
-					"License: "+emoji.License+"\n"+
-					"Other: "+emoji.Other+"\n"+
-					"isNSFW: "+strconv.FormatBool(emoji.IsSensitive)+"\n")
+				"- Name    : **"+emoji.Name+"**\n"+
+					"- Category: **"+emoji.Category+"**\n"+
+					"- Tag     : **"+emoji.Tag+"**\n"+
+					"- License : **"+emoji.License+"**\n"+
+					"- Other   : **"+emoji.Other+"**\n"+
+					"- NSFW    : **"+strconv.FormatBool(emoji.IsSensitive)+"**\n"+
+					"## 絵文字画像")
 
 			file, err := os.Open(emoji.FilePath)
 			if err != nil {
@@ -414,7 +412,7 @@ func newEmojiChannelComponent() {
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
 					Flags:   discordgo.MessageFlagsEphemeral,
-					Content: "申請チャンネルを作成しました < #" + channel.Name + " >\n",
+					Content: "## 申請チャンネルを作成しました\nチャンネル: https://discordapp.com/channels/" + GuildID + "/" + channel.ID + "\n---",
 				},
 			})
 
@@ -426,16 +424,14 @@ func newEmojiChannelComponent() {
 
 			s.ChannelMessageSend(
 				channel.ID,
-				":: 絵文字申請チャンネルへようこそ！ "+user.Mention()+"\n"+
-					":---\n"+
+				"# 絵文字申請チャンネルへようこそ！\n"+user.Mention()+"\n"+
 					" ここでは絵文字に関する各種登録を行います。表示されるメッセージに従って入力を行ってください！\n"+
-					" 申請は絵文字Botが担当させていただきます。Botが一度非アクティブになると設定は初期化されますのでご注意ください！\n"+
-					":---\n",
+					" 申請は絵文字Botが担当させていただきます。Botが一度非アクティブになると設定は初期化されますのでご注意ください！\n",
 			)
 
 			s.ChannelMessageSendComplex(channel.ID,
 				&discordgo.MessageSend{
-					Content: "申請をキャンセルする場合は以下のボタンを押してください。\n申請後はキャンセルできませんのでご注意ください。\n",
+					Content: "## 申請のキャンセル\n申請をキャンセルする場合は以下のボタンを押してください。\n申請後はキャンセルできませんのでご注意ください。\n",
 					Components: []discordgo.MessageComponent{
 						discordgo.ActionsRow{
 							Components: []discordgo.MessageComponent{
