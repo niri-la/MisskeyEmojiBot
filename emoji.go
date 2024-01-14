@@ -50,7 +50,7 @@ type Emoji struct {
 }
 
 func newEmojiRequest(user string) *Emoji {
-	id, _ := uuid.NewUUID()
+	id := uuid.New()
 	emoji := Emoji{
 		ID: id.String(),
 	}
