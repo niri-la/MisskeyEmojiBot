@@ -52,7 +52,7 @@ func init() {
 
 		_, err := s.ChannelMessageSend(
 			cID,
-			":: 絵文字の名前について教えてください。 例: 絵文字では`:emoji-name:`となりますが、この時の`emoji-name`を入力してください。入力可能な文字は`小文字アルファベット`, `数字`, `_`です。 \n",
+			"## 絵文字の名前について教えてください。 \n例: 絵文字では`:emoji-name:`となりますが、この時の`emoji-name`を入力してください。入力可能な文字は`小文字アルファベット`, `数字`, `_`です。 ",
 		)
 		if err != nil {
 			logger.WithFields(logrus.Fields{
@@ -68,7 +68,7 @@ func init() {
 	}
 	request["Upload"] = func(emoji *Emoji, s *discordgo.Session, cID string) Response {
 
-		_, err := s.ChannelMessageSend(cID, ":: 絵文字ファイルをDiscord上に添付してください。対応ファイルは`.png`,`.jpg`,`.jpeg`,`.gif`です。")
+		_, err := s.ChannelMessageSend(cID, "## 絵文字ファイルをDiscord上に添付してください。\n対応ファイルは`.png`,`.jpg`,`.jpeg`,`.gif`です。")
 		if err != nil {
 			logger.WithFields(logrus.Fields{
 				"user":  emoji.RequestUser,
@@ -87,7 +87,7 @@ func init() {
 			IsSuccess: true,
 		}
 
-		_, err := s.ChannelMessageSend(cID, ":: 絵文字のカテゴリを入力してください。特にない場合は「なし」と入力してください。カテゴリ名については絵文字やリアクションを入力する際のメニューを参考にしてください。 例: `Moji`")
+		_, err := s.ChannelMessageSend(cID, "## 絵文字のカテゴリを入力してください。\n特にない場合は「なし」と入力してください。カテゴリ名については絵文字やリアクションを入力する際のメニューを参考にしてください。 例: `Moji`")
 		if err != nil {
 			logger.WithFields(logrus.Fields{
 				"user":  emoji.RequestUser,
@@ -106,8 +106,8 @@ func init() {
 			IsSuccess: true,
 		}
 
-		_, err := s.ChannelMessageSend(cID, ":: 次に絵文字ファイルに設定するタグ(エイリアス)を入力してください。空白を間に挟むと複数設定できます。これは絵文字の検索をする際に使用されます。 例: `絵文字 えもじ エモジ `"+
-			" 必要がない場合は`tagなし`と入力してください。")
+		_, err := s.ChannelMessageSend(cID, "## 次に絵文字ファイルに設定するタグ(エイリアス)を入力してください。\n空白を間に挟むと複数設定できます。これは絵文字の検索をする際に使用されます。 例: `絵文字 えもじ エモジ `"+
+			"\n必要がない場合は`tagなし`と入力してください。")
 		if err != nil {
 			logger.WithFields(logrus.Fields{
 				"user":  emoji.RequestUser,
@@ -126,7 +126,7 @@ func init() {
 			IsSuccess: true,
 		}
 
-		_, err := s.ChannelMessageSend(cID, ":: ライセンスがあれば記載してください。特にない場合は`なし`と入力してください。")
+		_, err := s.ChannelMessageSend(cID, "## ライセンスがあれば記載してください。\n特にない場合は`なし`と入力してください。")
 		if err != nil {
 			logger.WithFields(logrus.Fields{
 				"user":  emoji.RequestUser,
@@ -145,7 +145,7 @@ func init() {
 			IsSuccess: true,
 		}
 
-		_, err := s.ChannelMessageSend(cID, ":: 備考があれば記載してください。特にない場合は`なし`と入力してください。")
+		_, err := s.ChannelMessageSend(cID, "## 備考があれば記載してください。\n特にない場合は`なし`と入力してください。")
 		if err != nil {
 			logger.WithFields(logrus.Fields{
 				"user":  emoji.RequestUser,
@@ -164,7 +164,7 @@ func init() {
 		}
 		s.ChannelMessageSendComplex(cID,
 			&discordgo.MessageSend{
-				Content: "4. 絵文字はセンシティブですか？\n",
+				Content: "## 絵文字はセンシティブですか？\n",
 				Components: []discordgo.MessageComponent{
 					discordgo.ActionsRow{
 						Components: []discordgo.MessageComponent{
@@ -198,16 +198,17 @@ func init() {
 		}
 
 		s.ChannelMessageSend(cID, ":---\n")
-		s.ChannelMessageSend(cID, ":: 最終確認を行います。\n"+
-			"Name: "+emoji.Name+"\n"+
-			"Category: "+emoji.Category+"\n"+
-			"Tag: "+emoji.Tag+"\n"+
-			"License: "+emoji.License+"\n"+
-			"Other: "+emoji.Other+"\n"+
-			"isNSFW: "+strconv.FormatBool(emoji.IsSensitive)+"\n")
+		s.ChannelMessageSend(cID, "## 最終確認を行います。\n"+
+			"- 名前 / Name: **"+emoji.Name+"**\n"+
+			"- カテゴリ / Category: **"+emoji.Category+"**\n"+
+			"- タグ / Tag: **"+emoji.Tag+"**\n"+
+			"- ライセンス / License: **"+emoji.License+"**\n"+
+			"- その他 / Other: **"+emoji.Other+"**\n"+
+			"- NSFW: **"+strconv.FormatBool(emoji.IsSensitive)+"**\n",
+		)
 		_, err := s.ChannelMessageSendComplex(cID,
 			&discordgo.MessageSend{
-				Content: "以上で申請しますか?\n",
+				Content: "## 以上で申請しますか?\n",
 				Components: []discordgo.MessageComponent{
 					discordgo.ActionsRow{
 						Components: []discordgo.MessageComponent{
@@ -602,14 +603,14 @@ func emojiModerationReaction(s *discordgo.Session, m *discordgo.MessageReactionA
 
 	if emoji.DisapproveCount-1 >= roleCount || (isDebug && emoji.DisapproveCount-1 >= 1) {
 		emoji.disapprove()
-		s.ChannelMessageSend(m.ChannelID, "申請は却下されました")
+		s.ChannelMessageSend(m.ChannelID, "## 申請は却下されました")
 		closeThread(m.ChannelID, emoji.ModerationMessageID)
 		return
 	}
 
 	if emoji.ApproveCount-1 >= roleCount || (isDebug && emoji.ApproveCount-1 >= 1) {
 		emoji.approve()
-		s.ChannelMessageSend(m.ChannelID, "絵文字はアップロードされました")
+		s.ChannelMessageSend(m.ChannelID, "## 絵文字はアップロードされました")
 		closeThread(m.ChannelID, emoji.ModerationMessageID)
 		return
 	}
