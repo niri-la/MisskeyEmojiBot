@@ -81,7 +81,7 @@ func (emoji *Emoji) approve() {
 	}
 	uploadToMisskey(emoji)
 	emoji.IsFinish = true
-	sendDirectMessage(*emoji, "申請された絵文字は登録されました。")
+	sendDirectMessage(*emoji, "申請された絵文字は登録されました。" + "\n" + emoji.Name )
 	deleteChannel(*emoji)
 }
 
@@ -92,7 +92,7 @@ func (emoji *Emoji) disapprove() {
 
 	emoji.IsAccepted = false
 	emoji.IsFinish = true
-	sendDirectMessage(*emoji, "申請された絵文字は却下されました。")
+	sendDirectMessage(*emoji, "申請された絵文字は却下されました。" + "\n" + emoji.Name)
 	deleteChannel(*emoji)
 }
 
