@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.3.5] - 2024-02-24
+### Changed
+- add sendDirectMessage emoji.Name [`#86`](https://github.com/niri-la/MisskeyEmojiBot/pull/86)
+
 ## [1.3.4] - 2024-01-14
 ### Changed
 - Change message. [`#82`](https://github.com/niwaniwa/MisskeyEmojiBot/issues/82)
