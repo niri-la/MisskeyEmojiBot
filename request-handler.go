@@ -270,10 +270,9 @@ func init() {
 			return response
 		}
 		reg := regexp.MustCompile(`[^a-z0-9_]+`)
-		result := reg.ReplaceAllStringFunc(m.Content, func(s string) string {
+		input := reg.ReplaceAllStringFunc(strings.ToLower(m.Content), func(s string) string {
 			return "_"
 		})
-		input := strings.ToLower(result)
 		s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+input+"` ]")
 		s.ChannelMessageSend(m.ChannelID, ":---")
 		emoji.Name = input
