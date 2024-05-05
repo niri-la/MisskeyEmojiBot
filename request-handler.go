@@ -52,7 +52,7 @@ func init() {
 
 		_, err := s.ChannelMessageSend(
 			cID,
-			"## 絵文字の名前について教えてください。 \n例: 絵文字では`:emoji-name:`となりますが、この時の`emoji-name`を入力してください。入力可能な文字は`小文字アルファベット`, `数字`, `_`です。 ",
+			"## 絵文字の名前を入力してください。\n実際にMisskey上で絵文字を入力する際は`:emoji-name:`としますが、この`emoji-name`の部分を入力してください。\n入力可能な文字は`小文字アルファベット`, `数字`, `_`です。",
 		)
 		if err != nil {
 			logger.WithFields(logrus.Fields{
@@ -87,7 +87,7 @@ func init() {
 			IsSuccess: true,
 		}
 
-		_, err := s.ChannelMessageSend(cID, "## 絵文字のカテゴリを入力してください。\n特にない場合は「なし」と入力してください。カテゴリ名については絵文字やリアクションを入力する際のメニューを参考にしてください。 例: `Moji`")
+		_, err := s.ChannelMessageSend(cID, "## 絵文字のカテゴリを入力してください。\n特にない場合は「なし」と入力してください。\nカテゴリ名については絵文字やリアクションを入力する際のメニューを参考にしてください。\n例: `Moji`")
 		if err != nil {
 			logger.WithFields(logrus.Fields{
 				"user":  emoji.RequestUser,
@@ -106,8 +106,9 @@ func init() {
 			IsSuccess: true,
 		}
 
-		_, err := s.ChannelMessageSend(cID, "## 次に絵文字ファイルに設定するタグ(エイリアス)を入力してください。\n空白を間に挟むと複数設定できます。これは絵文字の検索をする際に使用されます。 例: `絵文字 えもじ エモジ `"+
-			"\n必要がない場合は`tagなし`と入力してください。")
+		_, err := s.ChannelMessageSend(cID, "## 次に絵文字ファイルに設定するタグ(エイリアス)を入力してください。\n空白を間に挟むと複数設定できます。\n"+
+			"これは絵文字の検索を行う際に使用されるため、漢字、ひらがな、カタカナ、ローマ字などのバリエーションがあると利用しやすくなります。\n"+
+			"例: `絵文字 えもじ emoji emozi`\n必要がない場合は`tagなし`と入力してください。")
 		if err != nil {
 			logger.WithFields(logrus.Fields{
 				"user":  emoji.RequestUser,
@@ -126,7 +127,7 @@ func init() {
 			IsSuccess: true,
 		}
 
-		_, err := s.ChannelMessageSend(cID, "## ライセンスがあれば記載してください。\n特にない場合は`なし`と入力してください。")
+		_, err := s.ChannelMessageSend(cID, "## ライセンス情報を入力してください。\nこれは絵文字ファイルやその素材に関する権利/所有者を明らかにするために重要なものです。\n入力する内容がない場合は`なし`と入力してください。")
 		if err != nil {
 			logger.WithFields(logrus.Fields{
 				"user":  emoji.RequestUser,
@@ -145,7 +146,7 @@ func init() {
 			IsSuccess: true,
 		}
 
-		_, err := s.ChannelMessageSend(cID, "## 備考があれば記載してください。\n特にない場合は`なし`と入力してください。")
+		_, err := s.ChannelMessageSend(cID, "## 備考があれば記載してください。\nこの内容はMisskey上には掲載されません。\n特にない場合は`なし`と入力してください。")
 		if err != nil {
 			logger.WithFields(logrus.Fields{
 				"user":  emoji.RequestUser,
