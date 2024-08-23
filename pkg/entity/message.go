@@ -1,8 +1,9 @@
-package main
+package entity
 
 import (
 	_ "embed"
 	"fmt"
+
 	debug "github.com/sirupsen/logrus"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"

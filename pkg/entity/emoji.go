@@ -1,4 +1,4 @@
-package main
+package entity
 
 import (
 	"errors"
@@ -49,6 +49,15 @@ type Emoji struct {
 	StartAt             time.Time `json:"startAt"`
 }
 
+func GetEmoji(id string) (*Emoji, error) {
+	for i := range emojiProcessList {
+		if emojiProcessList[i].ID == id {
+			return &emojiProcessList[i], nil
+		}
+	}
+	return nil, errors.New("emoji not found")
+}
+
 func newEmojiRequest(user string) *Emoji {
 	id := uuid.New()
 	emoji := Emoji{
@@ -58,15 +67,6 @@ func newEmojiRequest(user string) *Emoji {
 	emoji.StartAt = time.Now()
 	emojiProcessList = append(emojiProcessList, emoji)
 	return &emoji
-}
-
-func GetEmoji(id string) (*Emoji, error) {
-	for i := range emojiProcessList {
-		if emojiProcessList[i].ID == id {
-			return &emojiProcessList[i], nil
-		}
-	}
-	return nil, errors.New("emoji not found")
 }
 
 func (emoji *Emoji) approve() {
@@ -81,7 +81,7 @@ func (emoji *Emoji) approve() {
 	}
 	uploadToMisskey(emoji)
 	emoji.IsFinish = true
-	sendDirectMessage(*emoji, "申請された絵文字は登録されました。" + "\n" + emoji.Name )
+	sendDirectMessage(*emoji, "申請された絵文字は登録されました。"+"\n"+emoji.Name)
 	deleteChannel(*emoji)
 }
 
@@ -92,7 +92,7 @@ func (emoji *Emoji) disapprove() {
 
 	emoji.IsAccepted = false
 	emoji.IsFinish = true
-	sendDirectMessage(*emoji, "申請された絵文字は却下されました。" + "\n" + emoji.Name)
+	sendDirectMessage(*emoji, "申請された絵文字は却下されました。"+"\n"+emoji.Name)
 	deleteChannel(*emoji)
 }
 

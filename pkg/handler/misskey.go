@@ -1,6 +1,10 @@
-package main
+package handler
 
 import (
+	"io"
+	"os"
+	"strings"
+
 	"github.com/sirupsen/logrus"
 	"github.com/yitsushi/go-misskey"
 	"github.com/yitsushi/go-misskey/models"
@@ -8,9 +12,6 @@ import (
 	"github.com/yitsushi/go-misskey/services/drive/files"
 	"github.com/yitsushi/go-misskey/services/drive/folders"
 	"github.com/yitsushi/go-misskey/services/notes"
-	"io"
-	"os"
-	"strings"
 )
 
 func uploadToMisskey(e *Emoji) error {
