@@ -4,7 +4,6 @@ import (
 	_ "embed"
 	"fmt"
 
-	debug "github.com/sirupsen/logrus"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 	"gopkg.in/yaml.v3"
@@ -26,14 +25,14 @@ var languages = []language.Tag{
 	language.English,
 }
 
+//go:embed message/ja-jp.yaml
+var messageJp string
+
 func init() {
 	m := make(map[interface{}]interface{})
 	err := yaml.Unmarshal([]byte(messageJp), &m)
-
 	if err != nil {
-		logger.WithFields(debug.Fields{
-			"event": "init",
-		}).Error(err)
+		return
 	}
 	processMap(m, "", &messages)
 }
@@ -67,10 +66,4 @@ func processMap(m map[interface{}]interface{}, parentKey string, result *[]Messa
 			*result = append(*result, MessageKeyValue{Key: key, Value: valueStr})
 		}
 	}
-
-	logger.WithFields(debug.Fields{
-		"event":  "message",
-		"length": len(*result),
-	}).Debug("complete.")
-
 }
