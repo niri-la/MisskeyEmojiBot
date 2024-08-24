@@ -5,12 +5,9 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 )
 
@@ -190,72 +187,4 @@ func returnFailedMessage(s *discordgo.Session, i *discordgo.InteractionCreate, r
 
 	logger.Error(reason)
 	return
-}
-
-func loadEnvironments() {
-	err := godotenv.Load("settings.env")
-
-	if err != nil {
-		panic(err)
-	}
-
-	GuildID = os.Getenv("guild_id")
-	BotToken = os.Getenv("bot_token")
-	AppID = os.Getenv("application_id")
-	ModeratorID = os.Getenv("moderator_role_id")
-	BotID = os.Getenv("bot_role_id")
-	ModerationChannelName = os.Getenv("moderation_channel_name")
-	misskeyToken = os.Getenv("misskey_token")
-	misskeyHost = os.Getenv("misskey_host")
-	isDebug, _ = strconv.ParseBool(os.Getenv("debug"))
-
-	logger.Debug(GuildID)
-	logger.Debug(BotToken)
-	logger.Debug(AppID)
-	logger.Debug(BotID)
-	logger.Debug(ModerationChannelName)
-	logger.Debug(misskeyToken)
-	logger.Debug(misskeyHost)
-	logger.Debug(isDebug)
-
-}
-
-func addJob() {
-	ticker := time.NewTicker(12 * time.Hour)
-	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				emoji := emojiReconstruction()
-				if len(emoji) != 0 {
-					noteEmojiAdded(emoji)
-				}
-			}
-		}
-	}()
-
-	cleanRequest := time.NewTicker(12 * time.Hour)
-	go func() {
-		for {
-			select {
-			case <-cleanRequest.C:
-				var targetEmoji []Emoji
-				for _, emoji := range emojiProcessList {
-					if time.Since(emoji.StartAt) > 48*time.Hour && !emoji.IsRequested {
-						targetEmoji = append(targetEmoji, emoji)
-					}
-				}
-
-				for _, emoji := range targetEmoji {
-					emoji.abort()
-					deleteChannel(emoji)
-				}
-
-				if len(targetEmoji) != 0 {
-					logrus.Warn("delete emoji request : " + strconv.Itoa(len(targetEmoji)) + " emojis")
-				}
-			}
-		}
-	}()
-
 }
