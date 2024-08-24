@@ -1,45 +1,36 @@
 package utility
 
 import (
-	"github.com/bwmarrin/discordgo"
-	"github.com/sirupsen/logrus"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
 )
 
-func countMembersWithRole(s *discordgo.Session, guildID string, roleID string) (int, error) {
-	members, err := s.GuildMembers(guildID, "", 1000)
+func EmojiDownload(url string, filePath string) error {
+	response, err := http.Get(url)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	count := 0
-	for _, m := range members {
-		for _, r := range m.Roles {
-			if r == roleID {
-				count++
-				break
-			}
-		}
+	defer response.Body.Close()
+
+	dirPath := filepath.Dir(filePath)
+	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+		os.MkdirAll(dirPath, os.ModePerm)
 	}
 
-	return count, nil
-}
-
-func closeThread(threadID string, messageID string) {
-	channel, _ := Session.Channel(threadID)
-	if !channel.IsThread() {
-		return
-	}
-	archived := true
-	locked := true
-	t, err := Session.ChannelEditComplex(channel.ID, &discordgo.ChannelEdit{
-		Archived: &archived,
-		Locked:   &locked,
-	})
-
-	err = Session.ChannelMessageDelete(t.ParentID, messageID)
+	file, err := os.Create(filePath)
 	if err != nil {
-		logger.WithFields(logrus.Fields{
-			"event": "delete-thread-message",
-		}).Error(err)
+		return err
 	}
+
+	defer file.Close()
+
+	_, err = io.Copy(file, response.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
