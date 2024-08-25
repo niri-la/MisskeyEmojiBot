@@ -28,8 +28,6 @@ func (h *tagHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID stri
 		return entity.Response{}, err
 	}
 
-	emoji.RequestState = "Tag"
-
 	return response, nil
 }
 
@@ -43,11 +41,9 @@ func (h *tagHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *disc
 	if m.Content == "tagなし" {
 		emoji.Tag = ""
 	}
-	emoji.ResponseState = "Tag"
 	response.IsSuccess = true
-	response.NextState = response.NextState + 1
 	s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+emoji.Tag+"` ]")
-	s.ChannelMessageSend(m.ChannelID, ":---\n")
+	s.ChannelMessageSend(m.ChannelID, "# ----------\n")
 
 	return response, nil
 }

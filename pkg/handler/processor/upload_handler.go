@@ -23,8 +23,6 @@ func (h *uploadHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID s
 		return entity.Response{IsSuccess: false}, err
 	}
 
-	emoji.RequestState = "Upload"
-
 	return entity.Response{IsSuccess: true}, nil
 }
 
@@ -64,11 +62,9 @@ func (h *uploadHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *d
 			return response, nil
 		}
 
-		emoji.ResponseState = "Upload"
 		response.IsSuccess = true
-		response.NextState = response.NextState + 1
 
-		s.ChannelMessageSend(m.ChannelID, ":---\n")
+		s.ChannelMessageSend(m.ChannelID, "# ----------\n")
 
 		return response, nil
 	} else {

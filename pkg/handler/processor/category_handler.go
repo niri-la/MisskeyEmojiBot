@@ -25,8 +25,6 @@ func (h *categoryHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID
 		return entity.Response{}, err
 	}
 
-	emoji.RequestState = "Category"
-
 	return response, nil
 }
 
@@ -40,11 +38,10 @@ func (h *categoryHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m 
 	if m.Content == "なし" || m.Content == "その他" {
 		emoji.Category = ""
 	}
-	emoji.ResponseState = "Category"
 	response.IsSuccess = true
-	response.NextState = response.NextState + 1
+
 	s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+emoji.Category+"` ]")
-	s.ChannelMessageSend(m.ChannelID, ":---\n")
+	s.ChannelMessageSend(m.ChannelID, "# ----------\n")
 
 	return response, nil
 }
