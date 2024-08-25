@@ -6,6 +6,7 @@ import (
 	"MisskeyEmojiBot/pkg/repository"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -67,9 +68,16 @@ func (c *emojiRequestComponen) Execute(s *discordgo.Session, i *discordgo.Intera
 
 	emoji.IsRequested = true
 
-	c.discordRepo.SendDirectMessage(*&emoji.RequestUser, "--- 申請内容 "+emoji.ID+"---\n名前: "+emoji.Name+"\nCategory: "+
-		emoji.Category+"\n"+"tag:"+emoji.Tag+"\n"+"License:"+emoji.License+"\n"+"isNSFW:"+strconv.FormatBool(emoji.IsSensitive)+"\n"+
-		"備考: "+emoji.Other+"\nURL: https://discordapp.com/channels/"+c.config.GuildID+"/"+emoji.ChannelID+"\n---")
+	c.discordRepo.SendDirectMessage(emoji.RequestUser, "# 申請内容 "+emoji.ID+"\n"+
+		":: 申請日時: "+emoji.StartAt.Format(time.RFC1123)+"\n"+
+		"- 名前: **"+emoji.Name+"**\n"+
+		"- Category: "+emoji.Category+"\n"+
+		"- tag: "+emoji.Tag+"\n"+
+		"- License: "+emoji.License+"\n"+
+		"- センシティブ設定 / NSFW: "+strconv.FormatBool(emoji.IsSensitive)+"\n"+
+		"- 備考: "+emoji.Other+"\n"+
+		"URL: https://discordapp.com/channels/"+c.config.GuildID+"/"+emoji.ChannelID+"\n"+
+		"### ------------")
 
 	moderationChannel, err := c.discordRepo.FindChannelByName(c.config.GuildID, "emoji-moderation")
 	if err != nil {
