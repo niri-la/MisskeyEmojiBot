@@ -40,6 +40,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	_, err = os.Stat(config.SavePath)
+	if os.IsNotExist(err) {
+		err := os.Mkdir(config.SavePath, os.ModePerm)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+		}
+	}
+
 	// start
 	Session.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
 		println(":: Bot starting")
@@ -52,7 +60,7 @@ func main() {
 	}
 
 	discordRepository := repository.NewDiscordRepository(Session)
-	emojiRepository := repository.NewEmojiRepository()
+	emojiRepository := repository.NewEmojiRepository(config)
 	misskeyRepository, err := repository.NewMisskeyRepository(config.MisskeyToken, config.MisskeyHost)
 
 	if err != nil {
@@ -72,6 +80,7 @@ func main() {
 	// register command
 	commandHandler.RegisterCommand(command.NewInitCommand(config, discordRepository))
 	commandHandler.RegisterCommand(command.NewNirilaCommand(discordRepository, string(version)))
+	commandHandler.RegisterCommand(command.NewEmojiDetailChangeCommand(config, emojiRepository, discordRepository))
 
 	// register component
 	componentHandler.AddComponent(component.NewCreateEmojiChannelComponen(emojiRequestHandler, emojiRepository, discordRepository))
