@@ -11,22 +11,23 @@ type EmojiCancelRequestComponent interface {
 }
 
 type emojiCancelRequestComponent struct {
-	discordRepo repository.DiscordRepository
+	emojiRepository repository.EmojiRepository
+	discordRepo     repository.DiscordRepository
 }
 
-func NewEmojiCancelRequestComponent(discordRepo repository.DiscordRepository) handler.Component {
-	return &emojiCancelRequestComponent{discordRepo: discordRepo}
+func NewEmojiCancelRequestComponent(emojiRepository repository.EmojiRepository, discordRepo repository.DiscordRepository) handler.Component {
+	return &emojiCancelRequestComponent{emojiRepository: emojiRepository, discordRepo: discordRepo}
 }
 
-func (e *emojiCancelRequestComponent) GetCommand() *discordgo.ApplicationCommand {
+func (c *emojiCancelRequestComponent) GetCommand() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
 		Name: "cancel_request",
 	}
 }
 
-func (e *emojiCancelRequestComponent) Execute(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func (c *emojiCancelRequestComponent) Execute(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	channel, _ := s.Channel(i.ChannelID)
-	emoji, err := GetEmoji(channel.Name[6:])
+	emoji, err := c.emojiRepository.GetEmoji(channel.Name[6:])
 	if err != nil {
 		s.ChannelMessageSend(
 			channel.ID,
@@ -53,7 +54,7 @@ func (e *emojiCancelRequestComponent) Execute(s *discordgo.Session, i *discordgo
 			Content: "リクエストをキャンセルしました。\n",
 		},
 	})
-	e.discordRepo.SendDirectMessage(*emoji, "申請された絵文字はキャンセルされました。: ")
-	emoji.abort()
-	e.discordRepo.DeleteChannel(*emoji)
+	c.emojiRepository.Abort(emoji)
+	c.discordRepo.SendDirectMessage(*&emoji.RequestUser, "申請された絵文字はキャンセルされました。: ")
+	c.discordRepo.DeleteChannel(*&emoji.ChannelID)
 }

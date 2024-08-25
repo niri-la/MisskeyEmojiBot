@@ -5,42 +5,35 @@ import (
 	"MisskeyEmojiBot/pkg/repository"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/sirupsen/logrus"
 )
 
 type NsfwInactiveComponen interface {
 }
 
 type nsfwInactiveComponen struct {
-	discordRepo repository.DiscordRepository
+	emojiRequestHandler handler.EmojiRequestHandler
+	emojiRepository     repository.EmojiRepository
+	discordRepo         repository.DiscordRepository
 }
 
-func NewNsfwInactiveComponent(discordRepo repository.DiscordRepository) handler.Component {
-	return &nsfwInactiveComponen{discordRepo: discordRepo}
+func NewNsfwInactiveComponent(emojiRequestHandler handler.EmojiRequestHandler, emojiRepository repository.EmojiRepository, discordRepo repository.DiscordRepository) handler.Component {
+	return &nsfwInactiveComponen{emojiRequestHandler: emojiRequestHandler, emojiRepository: emojiRepository, discordRepo: discordRepo}
 }
 
-func (n *nsfwInactiveComponen) GetCommand() *discordgo.ApplicationCommand {
+func (c *nsfwInactiveComponen) GetCommand() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
 		Name: "nsfw_no",
 	}
 }
 
-func (n *nsfwInactiveComponen) Execute(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func (c *nsfwInactiveComponen) Execute(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	channel, _ := s.Channel(i.ChannelID)
-	emoji, err := GetEmoji(channel.Name[6:])
+	emoji, err := c.emojiRepository.GetEmoji(channel.Name[6:])
 	if err != nil {
 		s.ChannelMessageSend(
 			channel.ID,
 			"設定に失敗しました。管理者に問い合わせを行ってください。 #03a\n",
 		)
-
-		logger.WithFields(logrus.Fields{
-			"event": "nsfw",
-			"id":    emoji.ID,
-			"user":  i.Member.User,
-			"name":  emoji.Name,
-		}).Error(err)
-		return
 	}
 
 	if emoji.IsRequested {
@@ -63,7 +56,7 @@ func (n *nsfwInactiveComponen) Execute(s *discordgo.Session, i *discordgo.Intera
 	})
 
 	emoji.IsSensitive = false
-	emoji.RequestState = "Nsfw"
-	emoji.ResponseState = "Nsfw"
-	ProcessNextRequest(emoji, s, i.ChannelID)
+	emoji.NowStateIndex++
+	emoji.ResponseFlag = false
+	c.emojiRequestHandler.ProcessRequest(emoji, s, i.ChannelID)
 }
