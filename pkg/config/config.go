@@ -16,6 +16,7 @@ type Config struct {
 	ModerationChannelName string
 	MisskeyToken          string
 	MisskeyHost           string
+	SavePath              string
 	IsDebug               bool
 }
 
@@ -40,6 +41,7 @@ func LoadConfig() Config {
 		ModerationChannelName: os.Getenv("moderation_channel_name"),
 		MisskeyToken:          os.Getenv("misskey_token"),
 		MisskeyHost:           os.Getenv("misskey_host"),
+		SavePath:              os.Getenv("save_path"),
 		IsDebug:               isDebug,
 	}
 

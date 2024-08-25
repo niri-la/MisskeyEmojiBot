@@ -96,6 +96,8 @@ func (h *emojiModerationReactionHandler) HandleEmojiModerationReaction(s *discor
 		err := h.emojiHandler.Approve(emoji)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
+			s.ChannelMessageSend(m.ChannelID, "絵文字アップロードに失敗しました。"+err.Error())
+			return
 		}
 		s.ChannelMessageSend(m.ChannelID, "## 絵文字はアップロードされました")
 		h.discordRepository.CloseThread(m.ChannelID, emoji.ModerationMessageID)
