@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -44,15 +43,6 @@ type Emoji struct {
 	ModerationMessageID string    `json:"moderationMessageID"`
 	UserThreadID        string    `json:"userThreadID"`
 	StartAt             time.Time `json:"startAt"`
-}
-
-func GetEmoji(id string) (*Emoji, error) {
-	for i := range emojiProcessList {
-		if emojiProcessList[i].ID == id {
-			return &emojiProcessList[i], nil
-		}
-	}
-	return nil, errors.New("emoji not found")
 }
 
 func newEmojiRequest(user string) *Emoji {

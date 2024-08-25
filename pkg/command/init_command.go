@@ -1,29 +1,33 @@
 package command
 
 import (
-	"MisskeyEmojiBot/pkg/entity"
+	"MisskeyEmojiBot/pkg/handler"
+	"MisskeyEmojiBot/pkg/repository"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-type initCommand struct {
+type InitCommand interface {
 }
 
-func NewInitCommand() *entity.Command {
-	InitCommand := &initCommand{}
-	return &entity.Command{
-		Command: &discordgo.ApplicationCommand{
-			Name:        "init",
-			Description: "絵文字申請用の初期化を行います",
-		},
-		Executer: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			InitCommand.Execute(s, i)
-		},
+type initCommand struct {
+	discordRepo repository.DiscordRepository
+}
+
+func NewInitCommand(discordRepo repository.DiscordRepository) handler.CommandInterface {
+	return &initCommand{discordRepo: discordRepo}
+}
+
+func (c *initCommand) GetCommand() *discordgo.ApplicationCommand {
+	return &discordgo.ApplicationCommand{
+		Name:        "init",
+		Description: "絵文字申請の初期化を行います。",
+		Type:        discordgo.ChatApplicationCommand,
 	}
 }
 
 func (c *initCommand) Execute(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	if !hasPermission(*i.Member.User) {
+	if !c.discordRepo.HasRole("GuildID", *i.Member.User, "admin") {
 		returnFailedMessage(s, i, "No permission.")
 		return
 	}
