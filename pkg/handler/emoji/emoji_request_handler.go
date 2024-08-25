@@ -1,4 +1,4 @@
-package handler
+package emoji
 
 import (
 	"MisskeyEmojiBot/pkg/entity"
@@ -27,28 +27,15 @@ var workflow = map[int]string{
 }
 
 type EmojiRequestHandler interface {
-	AddProcess(processor EmojiProcessHandler)
-	Process(emoji *entity.Emoji, s *discordgo.Session, m *discordgo.MessageCreate) error
-	ProcessRequest(emoji *entity.Emoji, s *discordgo.Session, channelID string) error
-	ResetState(emoji *entity.Emoji, s *discordgo.Session)
 }
 
 type emojiRequestHandler struct {
-	reverseWorkflowMap map[string]int
-	processor          []EmojiProcessHandler
+	processor []EmojiProcessHandler
 }
 
 func NewEmojiRequestHandler() EmojiRequestHandler {
 	handler := &emojiRequestHandler{}
-	handler.init()
 	return handler
-}
-
-func (h *emojiRequestHandler) init() {
-	h.reverseWorkflowMap = make(map[string]int)
-	for key, value := range workflow {
-		h.reverseWorkflowMap[value] = key
-	}
 }
 
 func (h *emojiRequestHandler) AddProcess(processor EmojiProcessHandler) {
@@ -62,11 +49,11 @@ func (h *emojiRequestHandler) Process(emoji *entity.Emoji, s *discordgo.Session,
 	// 3. 成功したらフラグをfalseにしてindexを1進める
 	// 4. 1に戻る
 
-	if emoji.NowStateIndex >= len(h.processor) {
+	processor := h.processor[emoji.NowStateIndex]
+
+	if emoji.NowStateIndex >= len(h.processor)-1 {
 		return nil
 	}
-
-	processor := h.processor[emoji.NowStateIndex]
 
 	if !emoji.ResponseFlag {
 		r, err := processor.Request(emoji, s, m.ChannelID)
@@ -84,32 +71,13 @@ func (h *emojiRequestHandler) Process(emoji *entity.Emoji, s *discordgo.Session,
 		if r.IsSuccess {
 			emoji.NowStateIndex++
 			emoji.ResponseFlag = false
-			return h.ProcessRequest(emoji, s, m.ChannelID)
 		}
 	}
 
 	return nil
 }
 
-func (h *emojiRequestHandler) ResetState(emoji *entity.Emoji, s *discordgo.Session) {
+func (h *emojiRequestHandler) ResetState(emoji *entity.Emoji, s *discordgo.Session, id string) {
 	emoji.NowStateIndex = 0
 	emoji.ResponseFlag = false
-}
-
-func (h *emojiRequestHandler) ProcessRequest(emoji *entity.Emoji, s *discordgo.Session, channelID string) error {
-	if emoji.NowStateIndex >= len(h.processor) {
-		return nil
-	}
-
-	processor := h.processor[emoji.NowStateIndex]
-
-	r, err := processor.Request(emoji, s, channelID)
-	if err != nil {
-		return err
-	}
-	if r.IsSuccess {
-		emoji.ResponseFlag = true
-	}
-
-	return nil
 }

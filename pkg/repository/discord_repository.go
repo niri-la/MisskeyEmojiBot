@@ -12,6 +12,8 @@ type DiscordRepository interface {
 	CloseThread(threadID string, messageID string) error
 	CountMembersWithSpecificRole(guildID string, roleID string) (int, error)
 	HasRole(guildID string, user discordgo.User, targetRole string) bool
+	FindChannelByName(guildID string, name string) (*discordgo.Channel, error)
+	ReturnFailedMessage(i *discordgo.InteractionCreate, reason string) error
 }
 
 type discordRepository struct {
@@ -88,12 +90,41 @@ func (r *discordRepository) CountMembersWithSpecificRole(guildID string, roleID 
 	return count, nil
 }
 
-func (r *discordRepository) HasRole(guildID string, user discordgo.User, targetRole string) bool {
-	member, _ := r.session.GuildMember(guildID, user.ID)
+func (r *discordRepository) HasRole(guildID string, user discordgo.User, targetRoleID string) bool {
+	member, err := r.session.GuildMember(guildID, user.ID)
+	if err != nil {
+		return false
+	}
 	for _, roleID := range member.Roles {
-		if targetRole == roleID {
+		if targetRoleID == roleID {
 			return true
 		}
 	}
 	return false
+}
+
+func (r *discordRepository) FindChannelByName(guildID string, name string) (*discordgo.Channel, error) {
+	channels, err := r.session.GuildChannels(guildID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, c := range channels {
+		if c.Name == name {
+			return c, nil
+		}
+	}
+
+	return nil, errors.New("channel not found")
+}
+
+func (r *discordRepository) ReturnFailedMessage(i *discordgo.InteractionCreate, reason string) error {
+	err := r.session.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Flags:   discordgo.MessageFlagsEphemeral,
+			Content: "新たな申請のRequestに失敗しました。管理者に問い合わせを行ってください。\n" + reason,
+		},
+	})
+	return err
 }

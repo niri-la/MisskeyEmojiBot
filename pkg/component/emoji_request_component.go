@@ -1,24 +1,26 @@
 package component
 
 import (
+	"MisskeyEmojiBot/pkg/config"
 	"MisskeyEmojiBot/pkg/handler"
 	"MisskeyEmojiBot/pkg/repository"
 	"os"
 	"strconv"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/sirupsen/logrus"
 )
 
 type EmojiRequestComponen interface {
 }
 
 type emojiRequestComponen struct {
-	discordRepo repository.DiscordRepository
+	config          config.Config
+	emojiRepository repository.EmojiRepository
+	discordRepo     repository.DiscordRepository
 }
 
-func NewEmojiRequestComponen(discordRepo repository.DiscordRepository) handler.Component {
-	return &emojiRequestComponen{discordRepo: discordRepo}
+func NewEmojiRequestComponen(config config.Config, emojiRepository repository.EmojiRepository, discordRepo repository.DiscordRepository) handler.Component {
+	return &emojiRequestComponen{config: config, emojiRepository: emojiRepository, discordRepo: discordRepo}
 }
 func (c *emojiRequestComponen) GetCommand() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
@@ -28,7 +30,7 @@ func (c *emojiRequestComponen) GetCommand() *discordgo.ApplicationCommand {
 
 func (c *emojiRequestComponen) Execute(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	channel, _ := s.Channel(i.ChannelID)
-	emoji, err := GetEmoji(channel.Name[6:])
+	emoji, err := c.emojiRepository.GetEmoji(channel.Name[6:])
 	if err != nil {
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -65,10 +67,14 @@ func (c *emojiRequestComponen) Execute(s *discordgo.Session, i *discordgo.Intera
 
 	emoji.IsRequested = true
 
-	c.discordRepo.SendDirectMessage(*emoji, "--- 申請内容 "+emoji.ID+"---\n名前: "+emoji.Name+"\nCategory: "+
+	c.discordRepo.SendDirectMessage(*&emoji.RequestUser, "--- 申請内容 "+emoji.ID+"---\n名前: "+emoji.Name+"\nCategory: "+
 		emoji.Category+"\n"+"tag:"+emoji.Tag+"\n"+"License:"+emoji.License+"\n"+"isNSFW:"+strconv.FormatBool(emoji.IsSensitive)+"\n"+
-		"備考: "+emoji.Other+"\nURL: https://discordapp.com/channels/"+GuildID+"/"+emoji.ChannelID+"\n---")
+		"備考: "+emoji.Other+"\nURL: https://discordapp.com/channels/"+c.config.GuildID+"/"+emoji.ChannelID+"\n---")
 
+	moderationChannel, err := c.discordRepo.FindChannelByName(c.config.GuildID, "emoji-moderation")
+	if err != nil {
+		return
+	}
 	send, err := s.ChannelMessageSend(moderationChannel.ID, "## 申請 "+emoji.ID+"\n- 申請者: "+i.Member.User.Username+"\n"+"- 絵文字名: "+emoji.Name)
 	if err != nil {
 		return
@@ -81,17 +87,6 @@ func (c *emojiRequestComponen) Execute(s *discordgo.Session, i *discordgo.Intera
 		AutoArchiveDuration: 60,
 		Invitable:           false,
 	})
-
-	logger.WithFields(logrus.Fields{
-		"user":     i.Member.User.Username,
-		"channel":  channel.Name,
-		"id":       emoji.ID,
-		"name":     emoji.Name,
-		"tag":      emoji.Tag,
-		"category": emoji.Category,
-		"license":  emoji.License,
-		"other":    emoji.Other,
-	}).Info("Submit Request.")
 
 	s.ChannelMessageSend(thread.ID, "## 申請内容\n")
 	s.ChannelMessageSend(thread.ID,

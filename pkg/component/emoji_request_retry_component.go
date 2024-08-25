@@ -5,18 +5,19 @@ import (
 	"MisskeyEmojiBot/pkg/repository"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/sirupsen/logrus"
 )
 
 type EmojiRequestRetryComponen interface {
 }
 
 type emojiRequestRetryComponen struct {
-	discordRepo repository.DiscordRepository
+	emojiRequestHandler handler.EmojiRequestHandler
+	emojiRepository     repository.EmojiRepository
+	discordRepo         repository.DiscordRepository
 }
 
-func NewEmojiRequestRetryComponen(discordRepo repository.DiscordRepository) handler.Component {
-	return &emojiRequestRetryComponen{discordRepo: discordRepo}
+func NewEmojiRequestRetryComponen(emojiRequestHandler handler.EmojiRequestHandler, emojiRepository repository.EmojiRepository, discordRepo repository.DiscordRepository) handler.Component {
+	return &emojiRequestRetryComponen{emojiRequestHandler: emojiRequestHandler, emojiRepository: emojiRepository, discordRepo: discordRepo}
 }
 func (c *emojiRequestRetryComponen) GetCommand() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
@@ -26,7 +27,7 @@ func (c *emojiRequestRetryComponen) GetCommand() *discordgo.ApplicationCommand {
 
 func (c *emojiRequestRetryComponen) Execute(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	channel, _ := s.Channel(i.ChannelID)
-	emoji, err := GetEmoji(channel.Name[6:])
+	emoji, err := c.emojiRepository.GetEmoji(channel.Name[6:])
 	if err != nil {
 		s.ChannelMessageSend(
 			channel.ID,
@@ -43,8 +44,6 @@ func (c *emojiRequestRetryComponen) Execute(s *discordgo.Session, i *discordgo.I
 	}
 
 	emoji.IsSensitive = false
-	emoji.RequestState = workflow[0]
-	emoji.ResponseState = workflow[0]
 
 	c.discordRepo.DeleteChannel(emoji.FilePath)
 
@@ -56,12 +55,8 @@ func (c *emojiRequestRetryComponen) Execute(s *discordgo.Session, i *discordgo.I
 		},
 	})
 
-	logger.WithFields(logrus.Fields{
-		"user":    i.Member.User.Username,
-		"channel": channel.Name,
-		"id":      emoji.ID,
-		"name":    emoji.Name,
-	}).Debug("Request reset.")
-
-	first(emoji, s, channel.ID)
+	// reset
+	emoji.Reset()
+	c.emojiRequestHandler.ResetState(emoji, s)
+	c.emojiRequestHandler.ProcessRequest(emoji, s, i.ChannelID)
 }

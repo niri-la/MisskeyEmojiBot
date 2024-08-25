@@ -15,7 +15,7 @@ type nirilaCommand struct {
 }
 
 func NewNirilaCommand(discordRepo repository.DiscordRepository) handler.CommandInterface {
-	return &initCommand{discordRepo: discordRepo}
+	return &nirilaCommand{discordRepo: discordRepo}
 }
 
 func (c *nirilaCommand) GetCommand() *discordgo.ApplicationCommand {

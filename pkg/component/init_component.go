@@ -1,6 +1,7 @@
 package component
 
 import (
+	"MisskeyEmojiBot/pkg/config"
 	"MisskeyEmojiBot/pkg/handler"
 	"MisskeyEmojiBot/pkg/repository"
 
@@ -11,20 +12,21 @@ type InitComponen interface {
 }
 
 type initComponen struct {
+	config      config.Config
 	discordRepo repository.DiscordRepository
 }
 
-func NewInitComponent(discordRepo repository.DiscordRepository) handler.Component {
-	return &initComponen{discordRepo: discordRepo}
+func NewInitComponent(config config.Config, discordRepo repository.DiscordRepository) handler.Component {
+	return &initComponen{config: config, discordRepo: discordRepo}
 }
 
-func (i *initComponen) GetCommand() *discordgo.ApplicationCommand {
+func (c *initComponen) GetCommand() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
 		Name: "init_channel",
 	}
 }
 
-func (*initComponen) Execute(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func (c *initComponen) Execute(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	channelID := i.MessageComponentData().Values[0]
 
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -35,6 +37,8 @@ func (*initComponen) Execute(s *discordgo.Session, i *discordgo.InteractionCreat
 				"初期設定を行いました。",
 		},
 	})
+
+	println("init component")
 
 	s.ChannelMessageSendComplex(channelID,
 		&discordgo.MessageSend{
@@ -58,13 +62,13 @@ func (*initComponen) Execute(s *discordgo.Session, i *discordgo.InteractionCreat
 
 	overwrites := []*discordgo.PermissionOverwrite{
 		{
-			ID:   ModeratorID,
+			ID:   c.config.ModeratorID,
 			Type: discordgo.PermissionOverwriteTypeRole,
 			Allow: discordgo.PermissionViewChannel |
 				discordgo.PermissionSendMessages,
 		},
 		{
-			ID:   BotID,
+			ID:   c.config.BotID,
 			Type: discordgo.PermissionOverwriteTypeRole,
 			Allow: discordgo.PermissionViewChannel |
 				discordgo.PermissionSendMessages,
@@ -79,23 +83,28 @@ func (*initComponen) Execute(s *discordgo.Session, i *discordgo.InteractionCreat
 	parent, err := s.Channel(i.ChannelID)
 
 	if err != nil {
-		returnFailedMessage(s, i, "Could not retrieve channel")
+		c.discordRepo.ReturnFailedMessage(i, "Could not retrieve channel")
 		return
 	}
 
-	channel, err := s.GuildChannelCreateComplex(GuildID, discordgo.GuildChannelCreateData{
-		Type:                 discordgo.ChannelTypeGuildText,
-		Name:                 ModerationChannelName,
-		ParentID:             parent.ParentID,
-		PermissionOverwrites: overwrites,
-	})
+	channel, err := c.discordRepo.FindChannelByName(i.GuildID, c.config.ModerationChannelName)
 
-	s.ChannelMessageSend(
-		channel.ID,
-		": モデレーション用チャンネルです。\nここに各種申請のスレッドが生成されます。",
-	)
+	if err != nil {
+		channel, err = s.GuildChannelCreateComplex(i.GuildID, discordgo.GuildChannelCreateData{
+			Type:                 discordgo.ChannelTypeGuildText,
+			Name:                 c.config.ModerationChannelName,
+			ParentID:             parent.ParentID,
+			PermissionOverwrites: overwrites,
+		})
+		if err != nil {
+			c.discordRepo.ReturnFailedMessage(i, "Could not create channel")
+			return
+		}
 
-	logger.Debug(":: Create a moderation channel")
-
-	return
+		s.ChannelMessageSend(
+			channel.ID,
+			": モデレーション用チャンネルです。\nここに各種申請のスレッドが生成されます。",
+		)
+		return
+	}
 }

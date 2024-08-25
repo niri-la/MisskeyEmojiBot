@@ -25,8 +25,6 @@ func (h *licenseHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID 
 		return entity.Response{}, err
 	}
 
-	emoji.RequestState = "License"
-
 	return response, nil
 }
 
@@ -35,7 +33,6 @@ func (h *licenseHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *
 		IsSuccess: false,
 	}
 
-	emoji.ResponseState = "License"
 	input := m.Content
 	if input == "なし" {
 		input = ""
@@ -43,10 +40,9 @@ func (h *licenseHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *
 	emoji.License = input
 
 	s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+input+"` ]")
-	s.ChannelMessageSend(m.ChannelID, ":---")
+	s.ChannelMessageSend(m.ChannelID, "# ----------\n")
 
 	response.IsSuccess = true
-	response.NextState = response.NextState + 1
 
 	return response, nil
 }

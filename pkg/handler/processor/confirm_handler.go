@@ -20,7 +20,7 @@ func (h *confirmHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID 
 		IsSuccess: true,
 	}
 
-	s.ChannelMessageSend(cID, ":---\n")
+	s.ChannelMessageSend(cID, "# ----------\n")
 	s.ChannelMessageSend(cID, "## 最終確認を行います。\n"+
 		"- 名前 / Name: **"+emoji.Name+"**\n"+
 		"- カテゴリ / Category: **"+emoji.Category+"**\n"+
@@ -61,7 +61,6 @@ func (h *confirmHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID 
 		return entity.Response{}, err
 	}
 
-	emoji.RequestState = "Check"
 	return response, nil
 }
 

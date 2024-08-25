@@ -25,8 +25,6 @@ func (h *otherHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID st
 		return entity.Response{}, err
 	}
 
-	emoji.RequestState = "Other"
-
 	return response, nil
 }
 
@@ -35,7 +33,6 @@ func (h *otherHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *di
 		IsSuccess: false,
 	}
 
-	emoji.ResponseState = "Other"
 	input := m.Content
 	if input == "なし" {
 		input = ""
@@ -43,10 +40,9 @@ func (h *otherHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *di
 	emoji.Other = input
 
 	s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+input+"` ]")
-	s.ChannelMessageSend(m.ChannelID, ":---")
+	s.ChannelMessageSend(m.ChannelID, "# ----------\n")
 
 	response.IsSuccess = true
-	response.NextState = response.NextState + 1
 
 	return response, nil
 }

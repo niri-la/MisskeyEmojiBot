@@ -12,21 +12,23 @@ type CreateEmojiChannelComponen interface {
 }
 
 type createEmojiChannelComponen struct {
-	discordRepo repository.DiscordRepository
+	emojiRequestHandler handler.EmojiRequestHandler
+	emojiReposiotry     repository.EmojiRepository
+	discordRepo         repository.DiscordRepository
 }
 
-func NewCreateEmojiChannelComponen(discordRepo repository.DiscordRepository) handler.Component {
-	return &createEmojiChannelComponen{discordRepo: discordRepo}
+func NewCreateEmojiChannelComponen(emojiRequestHandler handler.EmojiRequestHandler, emojiReposiotry repository.EmojiRepository, discordRepo repository.DiscordRepository) handler.Component {
+	return &createEmojiChannelComponen{emojiRequestHandler: emojiRequestHandler, emojiReposiotry: emojiReposiotry, discordRepo: discordRepo}
 }
 
-func (n *createEmojiChannelComponen) GetCommand() *discordgo.ApplicationCommand {
+func (c *createEmojiChannelComponen) GetCommand() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
 		Name: "new_emoji_channel",
 	}
 }
 
-func (n *createEmojiChannelComponen) Execute(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	emoji := newEmojiRequest(i.Member.User.ID)
+func (c *createEmojiChannelComponen) Execute(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	emoji := c.emojiReposiotry.NewEmoji(i.Member.User.ID)
 
 	channel, err := s.ThreadStartComplex(i.ChannelID, &discordgo.ThreadStart{
 		Name:                "Emoji-" + emoji.ID,
@@ -36,8 +38,8 @@ func (n *createEmojiChannelComponen) Execute(s *discordgo.Session, i *discordgo.
 	})
 
 	if err != nil {
-		returnFailedMessage(s, i, fmt.Sprintf("Could not create emoji channel: %v", err))
-		emoji.abort()
+		c.discordRepo.ReturnFailedMessage(i, fmt.Sprintf("Could not create emoji channel: %v", err))
+		c.emojiReposiotry.Abort(emoji)
 		return
 	}
 
@@ -45,13 +47,13 @@ func (n *createEmojiChannelComponen) Execute(s *discordgo.Session, i *discordgo.
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Flags:   discordgo.MessageFlagsEphemeral,
-			Content: "## 申請チャンネルを作成しました\nチャンネル: https://discordapp.com/channels/" + GuildID + "/" + channel.ID + "\n---",
+			Content: "## 申請チャンネルを作成しました\nチャンネル: https://discordapp.com/channels/" + i.GuildID + "/" + channel.ID + "\n---",
 		},
 	})
 
 	user, err := s.User(emoji.RequestUser)
 	if err != nil {
-		returnFailedMessage(s, i, fmt.Sprintf("Could not find user: %v", err))
+		c.discordRepo.ReturnFailedMessage(i, fmt.Sprintf("Could not find user: %v", err))
 		return
 	}
 
@@ -82,7 +84,8 @@ func (n *createEmojiChannelComponen) Execute(s *discordgo.Session, i *discordgo.
 		},
 	)
 
-	emoji, _ = GetEmoji(emoji.ID)
+	emoji, _ = c.emojiReposiotry.GetEmoji(emoji.ID)
 	emoji.ChannelID = channel.ID
-	first(emoji, s, channel.ID)
+	c.emojiRequestHandler.ResetState(emoji, s)
+	c.emojiRequestHandler.ProcessRequest(emoji, s, channel.ID)
 }

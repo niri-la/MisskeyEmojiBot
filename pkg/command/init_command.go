@@ -1,6 +1,7 @@
 package command
 
 import (
+	"MisskeyEmojiBot/pkg/config"
 	"MisskeyEmojiBot/pkg/handler"
 	"MisskeyEmojiBot/pkg/repository"
 
@@ -11,11 +12,12 @@ type InitCommand interface {
 }
 
 type initCommand struct {
+	config      config.Config
 	discordRepo repository.DiscordRepository
 }
 
-func NewInitCommand(discordRepo repository.DiscordRepository) handler.CommandInterface {
-	return &initCommand{discordRepo: discordRepo}
+func NewInitCommand(config config.Config, discordRepo repository.DiscordRepository) handler.CommandInterface {
+	return &initCommand{config: config, discordRepo: discordRepo}
 }
 
 func (c *initCommand) GetCommand() *discordgo.ApplicationCommand {
@@ -27,8 +29,8 @@ func (c *initCommand) GetCommand() *discordgo.ApplicationCommand {
 }
 
 func (c *initCommand) Execute(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	if !c.discordRepo.HasRole("GuildID", *i.Member.User, "admin") {
-		returnFailedMessage(s, i, "No permission.")
+	if !c.discordRepo.HasRole(c.config.GuildID, *i.Member.User, c.config.ModeratorID) {
+		c.discordRepo.ReturnFailedMessage(i, "No permission.")
 		return
 	}
 

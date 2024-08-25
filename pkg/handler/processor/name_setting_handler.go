@@ -30,8 +30,6 @@ func (h *nameSettingHandler) Request(emoji *entity.Emoji, s *discordgo.Session, 
 		return entity.Response{}, err
 	}
 
-	emoji.RequestState = "SetName"
-
 	return response, nil
 }
 
@@ -53,10 +51,8 @@ func (h *nameSettingHandler) Response(emoji *entity.Emoji, s *discordgo.Session,
 		return "_"
 	})
 	s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+input+"` ]")
-	s.ChannelMessageSend(m.ChannelID, ":---")
+	s.ChannelMessageSend(m.ChannelID, "# ----------\n")
 	emoji.Name = input
-	emoji.ResponseState = "SetName"
 	response.IsSuccess = true
-	response.NextState = response.NextState + 1
 	return response, nil
 }

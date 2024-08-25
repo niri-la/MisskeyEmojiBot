@@ -2,15 +2,20 @@ package job
 
 import (
 	"MisskeyEmojiBot/pkg/repository"
+	"strings"
 	"time"
+
+	"github.com/yitsushi/go-misskey/models"
+	"github.com/yitsushi/go-misskey/services/notes"
 )
 
 type emojiUpdateInfoJob struct {
-	misskeyRepo repository.MisskeyRepository
+	emojiRepository repository.EmojiRepository
+	misskeyRepo     repository.MisskeyRepository
 }
 
-func NewEmojiUpdateInfoJob(misskeyRepo repository.MisskeyRepository) Job {
-	return &emojiUpdateInfoJob{misskeyRepo: misskeyRepo}
+func NewEmojiUpdateInfoJob(emojiRepository repository.EmojiRepository, misskeyRepo repository.MisskeyRepository) Job {
+	return &emojiUpdateInfoJob{emojiRepository: emojiRepository, misskeyRepo: misskeyRepo}
 }
 
 func (j *emojiUpdateInfoJob) Run() {
@@ -19,9 +24,21 @@ func (j *emojiUpdateInfoJob) Run() {
 		for {
 			select {
 			case <-ticker.C:
-				emoji := emojiReconstruction()
-				if len(emoji) != 0 {
-					noteEmojiAdded(emoji)
+				emojiArray := j.emojiRepository.EmojiReconstruction()
+				if len(emojiArray) != 0 {
+					var builder strings.Builder
+					for _, emoji := range emojiArray {
+						builder.WriteString(":" + emoji.Name + ":")
+					}
+
+					message := j.misskeyRepo.NewString("#にりらみすきー部 \n絵文字が追加されました\n" +
+						builder.String())
+
+					j.misskeyRepo.Note(notes.CreateRequest{
+						Visibility: models.VisibilityPublic,
+						Text:       message,
+						LocalOnly:  true,
+					})
 				}
 			}
 		}

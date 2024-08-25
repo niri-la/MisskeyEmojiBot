@@ -45,10 +45,10 @@ func (h *nsfwHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID str
 			},
 		},
 	)
-	emoji.RequestState = "Nsfw"
 	return response, nil
 }
 
+// dummyなので何もしない(IsSuccess: falseに設定しないとcomponentとの連携で不整合が発生する)
 func (h *nsfwHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *discordgo.MessageCreate) (entity.Response, error) {
 	response := entity.Response{
 		IsSuccess: false,
