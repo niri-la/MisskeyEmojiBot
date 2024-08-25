@@ -11,6 +11,7 @@ import (
 	"MisskeyEmojiBot/pkg/repository"
 	_ "embed"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"strings"
@@ -45,6 +46,11 @@ func main() {
 		println(":::::::::::::::::::::::")
 	})
 
+	version, err := os.ReadFile("version.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	discordRepository := repository.NewDiscordRepository(Session)
 	emojiRepository := repository.NewEmojiRepository()
 	misskeyRepository, err := repository.NewMisskeyRepository(config.MisskeyToken, config.MisskeyHost)
@@ -65,7 +71,7 @@ func main() {
 
 	// register command
 	commandHandler.RegisterCommand(command.NewInitCommand(config, discordRepository))
-	commandHandler.RegisterCommand(command.NewNirilaCommand(discordRepository))
+	commandHandler.RegisterCommand(command.NewNirilaCommand(discordRepository, string(version)))
 
 	// register component
 	componentHandler.AddComponent(component.NewCreateEmojiChannelComponen(emojiRequestHandler, emojiRepository, discordRepository))
