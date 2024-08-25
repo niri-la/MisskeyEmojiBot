@@ -7,13 +7,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Processor interface {
+type EmojiProcessHandler interface {
 	Request(*entity.Emoji, *discordgo.Session, string) (entity.Response, error)
 	Response(*entity.Emoji, *discordgo.Session, *discordgo.MessageCreate) (entity.Response, error)
-}
-
-type ResponseProcessor interface {
-	Execute(*entity.Emoji, *discordgo.Session, *discordgo.MessageCreate) (entity.Response, error)
 }
 
 // type RequestProcessor func(*entity.Emoji, *discordgo.Session, string) Response
@@ -31,47 +27,41 @@ var workflow = map[int]string{
 	8: "Check",
 }
 
-var request = make(map[string]RequestProcessor)
-var response = make(map[string]ResponseProcessor)
-var reverseWorkflowMap = make(map[string]int)
+type EmojiRequestHandler interface {
+}
 
-func init() {
+type emojiRequestHandler struct {
+	reverseWorkflowMap map[string]int
+}
+
+func NewEmojiRequestHandler() EmojiRequestHandler {
+	handler := &emojiRequestHandler{}
+	handler.init()
+	return handler
+}
+
+func (h *emojiRequestHandler) init() {
+	h.reverseWorkflowMap = make(map[string]int)
 	for key, value := range workflow {
-		reverseWorkflowMap[value] = key
+		h.reverseWorkflowMap[value] = key
 	}
 }
 
-func init() {
-
-}
-
-func ProcessNextRequest(emoji *Emoji, s *discordgo.Session, id string) bool {
-	requestIndex := reverseWorkflowMap[emoji.RequestState]
-	logger.WithFields(logrus.Fields{
-		"emoji id":       emoji.ID,
-		"request index":  requestIndex,
-		"response index": requestIndex,
-	}).Trace("Emoji Processing (request)...")
+func (h *emojiRequestHandler) ProcessNextRequest(emoji *entity.Emoji, s *discordgo.Session, id string) bool {
+	requestIndex := h.reverseWorkflowMap[emoji.RequestState]
 	r1 := request[workflow[requestIndex+1]](emoji, s, id)
 	return r1.IsSuccess
 }
 
-func Process(emoji *Emoji, s *discordgo.Session, m *discordgo.MessageCreate) bool {
+func (h *emojiRequestHandler) Process(emoji *entity.Emoji, s *discordgo.Session, m *discordgo.MessageCreate) bool {
 	// 0. まずrequestを確認する(初期はRequest及びResponseは0である)
 	// 1. 両者が等しい時はRequestを1進める
 	// 2. RequestよりResponseが小さい場合はResponse待ちなのでResponseに値を渡す
 	// 3. Responseが完了したらResponseを1すすめる。
 	// 4. 1に戻る
 	// 最終的に次の値がない場合は終了する。
-	requestIndex := reverseWorkflowMap[emoji.RequestState]
-	responseIndex := reverseWorkflowMap[emoji.ResponseState]
-
-	logger.WithFields(logrus.Fields{
-		"emoji id":       emoji.ID,
-		"user":           m.Author.Username,
-		"request index":  requestIndex,
-		"response index": requestIndex,
-	}).Trace("Emoji Processing...")
+	requestIndex := h.reverseWorkflowMap[emoji.RequestState]
+	responseIndex := h.reverseWorkflowMap[emoji.ResponseState]
 
 	if requestIndex == responseIndex {
 		r1 := request[workflow[requestIndex+1]](emoji, s, m.ChannelID)
@@ -81,14 +71,14 @@ func Process(emoji *Emoji, s *discordgo.Session, m *discordgo.MessageCreate) boo
 	if requestIndex > responseIndex {
 		r2 := response[workflow[responseIndex+1]](emoji, s, m)
 		if r2.IsSuccess {
-			Process(emoji, s, m)
+			h.Process(emoji, s, m)
 		}
 		return r2.IsSuccess
 	}
 	return false
 }
 
-func first(emoji *Emoji, s *discordgo.Session, id string) {
+func first(emoji *entity.Emoji, s *discordgo.Session, id string) {
 	request[workflow[1]](emoji, s, id)
 }
 
@@ -98,7 +88,7 @@ func emojiModerationReaction(s *discordgo.Session, m *discordgo.MessageReactionA
 	}
 
 	channel, _ := s.Channel(m.ChannelID)
-	var emoji *Emoji
+	var emoji *entity.Emoji
 	found := false
 
 	for _, e := range emojiProcessList {

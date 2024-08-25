@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"MisskeyEmojiBot/pkg/entity"
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
@@ -12,14 +11,19 @@ var (
 	CommandHandlers = make(map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate))
 )
 
+type CommandInterface interface {
+	GetCommand() *discordgo.ApplicationCommand
+	Execute(s *discordgo.Session, i *discordgo.InteractionCreate)
+}
+
 type CommandHandler struct {
 }
 
-func (c *CommandHandler) RegisterCommand(command *entity.Command) {
-	_, exist := CommandHandlers[command.Command.Name]
+func (c *CommandHandler) RegisterCommand(ci CommandInterface) {
+	_, exist := CommandHandlers[ci.GetCommand().Name]
 	if exist {
-		panic(fmt.Sprintf("Error: [%s] is already existed.", command.Command.Name))
+		panic(fmt.Sprintf("Error: [%s] is already existed.", ci.GetCommand().Name))
 	}
-	CommandHandlers[command.Command.Name] = command.Executer
-	Commands = append(Commands, command.Command)
+	CommandHandlers[ci.GetCommand().Name] = ci.Execute
+	Commands = append(Commands, ci.GetCommand())
 }
