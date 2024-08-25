@@ -1,17 +1,22 @@
-package request
+package processor
 
 import (
 	"MisskeyEmojiBot/pkg/entity"
+	"MisskeyEmojiBot/pkg/handler"
 	"regexp"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-type NameSettingHandler struct {
+type nameSettingHandler struct {
 }
 
-func (h *NameSettingHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID string) (entity.Response, error) {
+func NewNameSettingHandler() handler.EmojiProcessHandler {
+	return &nameSettingHandler{}
+}
+
+func (h *nameSettingHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID string) (entity.Response, error) {
 
 	response := entity.Response{
 		IsSuccess: true,
@@ -30,7 +35,7 @@ func (h *NameSettingHandler) Request(emoji *entity.Emoji, s *discordgo.Session, 
 	return response, nil
 }
 
-func (h *NameSettingHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *discordgo.MessageCreate) (entity.Response, error) {
+func (h *nameSettingHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *discordgo.MessageCreate) (entity.Response, error) {
 	response := entity.Response{
 		IsSuccess: false,
 	}

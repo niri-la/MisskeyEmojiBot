@@ -1,15 +1,20 @@
-package request
+package processor
 
 import (
 	"MisskeyEmojiBot/pkg/entity"
+	"MisskeyEmojiBot/pkg/handler"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-type NsfwHandler struct {
+type nsfwHandler struct {
 }
 
-func (h *NsfwHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID string) (entity.Response, error) {
+func NewNsfwHandler() handler.EmojiProcessHandler {
+	return &nsfwHandler{}
+}
+
+func (h *nsfwHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID string) (entity.Response, error) {
 	response := entity.Response{
 		IsSuccess: true,
 	}
@@ -44,7 +49,7 @@ func (h *NsfwHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID str
 	return response, nil
 }
 
-func (h *NsfwHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *discordgo.MessageCreate) (entity.Response, error) {
+func (h *nsfwHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *discordgo.MessageCreate) (entity.Response, error) {
 	response := entity.Response{
 		IsSuccess: false,
 	}

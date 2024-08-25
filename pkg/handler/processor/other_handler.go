@@ -1,15 +1,20 @@
-package request
+package processor
 
 import (
 	"MisskeyEmojiBot/pkg/entity"
+	"MisskeyEmojiBot/pkg/handler"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-type OtherHandler struct {
+type otherHandler struct {
 }
 
-func (h *OtherHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID string) (entity.Response, error) {
+func NewOtherHandler() handler.EmojiProcessHandler {
+	return &otherHandler{}
+}
+
+func (h *otherHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID string) (entity.Response, error) {
 
 	response := entity.Response{
 		IsSuccess: true,
@@ -25,7 +30,7 @@ func (h *OtherHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID st
 	return response, nil
 }
 
-func (h *OtherHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *discordgo.MessageCreate) (entity.Response, error) {
+func (h *otherHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *discordgo.MessageCreate) (entity.Response, error) {
 	response := entity.Response{
 		IsSuccess: false,
 	}
