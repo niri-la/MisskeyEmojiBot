@@ -88,7 +88,9 @@ func (c *emojiRequestComponen) Execute(s *discordgo.Session, i *discordgo.Intera
 		Invitable:           false,
 	})
 
-	s.ChannelMessageSend(thread.ID, "## 申請内容\n")
+	s.ChannelMessageSend(thread.ID, "# 申請\n")
+	s.ChannelMessageSend(thread.ID, ":: 申請者: **"+i.Member.User.Username+"**\n")
+	s.ChannelMessageSend(thread.ID, "# 詳細\n")
 	s.ChannelMessageSend(thread.ID,
 		"- Name    : **"+emoji.Name+"**\n"+
 			"- Category: **"+emoji.Category+"**\n"+
