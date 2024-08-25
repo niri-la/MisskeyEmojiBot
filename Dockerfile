@@ -9,7 +9,7 @@ RUN go mod download
 COPY . .
 
 # ビルド
-RUN CGO_ENABLED=0 GOOS=linux go build -o /main .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /main ./cmd/.
 
 RUN ls -l /app
 
