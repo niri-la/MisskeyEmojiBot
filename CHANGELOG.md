@@ -12,9 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Fixed
-- fix: emoji name input was not converted to lowercase [`#91`](https://github.com/niri-la/MisskeyEmojiBot/pull/91)
 
 ### Removed
+
+## [1.4.0] - 2024-08-25
+### Changed
+- refactor: reorganize file structure for better clarity and maintainability [`#97`](https://github.com/niri-la/MisskeyEmojiBot/pull/97)
+
+### Fixed
+- fix: emoji name input was not converted to lowercase [`#91`](https://github.com/niri-la/MisskeyEmojiBot/pull/91)
 
 ## [1.3.5] - 2024-02-24
 ### Changed
