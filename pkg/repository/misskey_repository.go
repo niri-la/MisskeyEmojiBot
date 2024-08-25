@@ -8,6 +8,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/yitsushi/go-misskey"
+	"github.com/yitsushi/go-misskey/core"
 	"github.com/yitsushi/go-misskey/models"
 	"github.com/yitsushi/go-misskey/services/admin/emoji"
 	"github.com/yitsushi/go-misskey/services/drive/files"
@@ -19,6 +20,7 @@ type MisskeyRepository interface {
 	Note(message notes.CreateRequest) error
 	UploadEmoji(emoji *entity.Emoji) error
 	GetFolder(folderName string) (models.Folder, error)
+	NewString(message string) core.String
 }
 
 type misskeyRepository struct {
@@ -99,6 +101,10 @@ func (r *misskeyRepository) UploadEmoji(userEmoji *entity.Emoji) error {
 	userEmoji.IsAccepted = true
 
 	return nil
+}
+
+func (r *misskeyRepository) NewString(message string) core.String {
+	return core.NewString(message)
 }
 
 func (r *misskeyRepository) Note(message notes.CreateRequest) error {
