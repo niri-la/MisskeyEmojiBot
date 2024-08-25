@@ -6,6 +6,7 @@ import (
 )
 
 type DiscordRepository interface {
+	GetSession() *discordgo.Session
 	SendDirectMessage(requestUser string, message string) error
 	DeleteChannel(channelID string) error
 	CloseThread(threadID string, messageID string) error
@@ -19,6 +20,10 @@ type discordRepository struct {
 
 func NewDiscordRepository(session *discordgo.Session) DiscordRepository {
 	return &discordRepository{session: session}
+}
+
+func (r *discordRepository) GetSession() *discordgo.Session {
+	return r.session
 }
 
 func (r *discordRepository) SendDirectMessage(requestUser string, message string) error {
