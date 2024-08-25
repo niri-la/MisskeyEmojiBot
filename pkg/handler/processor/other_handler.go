@@ -1,0 +1,52 @@
+package processor
+
+import (
+	"MisskeyEmojiBot/pkg/entity"
+	"MisskeyEmojiBot/pkg/handler"
+
+	"github.com/bwmarrin/discordgo"
+)
+
+type otherHandler struct {
+}
+
+func NewOtherHandler() handler.EmojiProcessHandler {
+	return &otherHandler{}
+}
+
+func (h *otherHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID string) (entity.Response, error) {
+
+	response := entity.Response{
+		IsSuccess: true,
+	}
+
+	_, err := s.ChannelMessageSend(cID, "## 備考があれば記載してください。\nこの内容はMisskey上には掲載されません。\n特にない場合は`なし`と入力してください。")
+	if err != nil {
+		return entity.Response{}, err
+	}
+
+	emoji.RequestState = "Other"
+
+	return response, nil
+}
+
+func (h *otherHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *discordgo.MessageCreate) (entity.Response, error) {
+	response := entity.Response{
+		IsSuccess: false,
+	}
+
+	emoji.ResponseState = "Other"
+	input := m.Content
+	if input == "なし" {
+		input = ""
+	}
+	emoji.Other = input
+
+	s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+input+"` ]")
+	s.ChannelMessageSend(m.ChannelID, ":---")
+
+	response.IsSuccess = true
+	response.NextState = response.NextState + 1
+
+	return response, nil
+}
