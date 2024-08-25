@@ -10,11 +10,12 @@ import (
 )
 
 type channelDeleteJob struct {
-	discordRepo repository.DiscordRepository
+	emojiRepository repository.EmojiRepository
+	discordRepo     repository.DiscordRepository
 }
 
-func NewChannelDeleteJob(discordRepo repository.DiscordRepository) Job {
-	return &channelDeleteJob{discordRepo: discordRepo}
+func NewChannelDeleteJob(emojiRepository repository.EmojiRepository, discordRepo repository.DiscordRepository) Job {
+	return &channelDeleteJob{emojiRepository: emojiRepository, discordRepo: discordRepo}
 }
 
 func (j *channelDeleteJob) Run() {
@@ -25,15 +26,15 @@ func (j *channelDeleteJob) Run() {
 			select {
 			case <-cleanRequest.C:
 				var targetEmoji []entity.Emoji
-				for _, emoji := range emojiProcessList {
+				for _, emoji := range j.emojiRepository.GetEmojis() {
 					if time.Since(emoji.StartAt) > 48*time.Hour && !emoji.IsRequested {
 						targetEmoji = append(targetEmoji, emoji)
 					}
 				}
 
 				for _, emoji := range targetEmoji {
-					emoji.abort()
-					j.discordRepo.DeleteChannel(emoji)
+					j.emojiRepository.Abort(&emoji)
+					j.discordRepo.DeleteChannel(emoji.ChannelID)
 				}
 
 				if len(targetEmoji) != 0 {
