@@ -1,11 +1,19 @@
 package job
 
-import "time"
+import (
+	"MisskeyEmojiBot/pkg/repository"
+	"time"
+)
 
-type EmojiUpdateInfoJob struct {
+type emojiUpdateInfoJob struct {
+	misskeyRepo repository.MisskeyRepository
 }
 
-func (j *EmojiUpdateInfoJob) Run() {
+func NewEmojiUpdateInfoJob(misskeyRepo repository.MisskeyRepository) Job {
+	return &emojiUpdateInfoJob{misskeyRepo: misskeyRepo}
+}
+
+func (j *emojiUpdateInfoJob) Run() {
 	ticker := time.NewTicker(12 * time.Hour)
 	go func() {
 		for {

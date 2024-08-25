@@ -1,23 +1,30 @@
 package job
 
 import (
+	"MisskeyEmojiBot/pkg/entity"
+	"MisskeyEmojiBot/pkg/repository"
 	"strconv"
 	"time"
 
 	"github.com/sirupsen/logrus"
 )
 
-type ChannelDeleteJob struct {
+type channelDeleteJob struct {
+	discordRepo repository.DiscordRepository
 }
 
-func (j *ChannelDeleteJob) Run() {
+func NewChannelDeleteJob(discordRepo repository.DiscordRepository) Job {
+	return &channelDeleteJob{discordRepo: discordRepo}
+}
+
+func (j *channelDeleteJob) Run() {
 
 	cleanRequest := time.NewTicker(12 * time.Hour)
 	go func() {
 		for {
 			select {
 			case <-cleanRequest.C:
-				var targetEmoji []Emoji
+				var targetEmoji []entity.Emoji
 				for _, emoji := range emojiProcessList {
 					if time.Since(emoji.StartAt) > 48*time.Hour && !emoji.IsRequested {
 						targetEmoji = append(targetEmoji, emoji)
@@ -26,7 +33,7 @@ func (j *ChannelDeleteJob) Run() {
 
 				for _, emoji := range targetEmoji {
 					emoji.abort()
-					deleteChannel(emoji)
+					j.discordRepo.DeleteChannel(emoji)
 				}
 
 				if len(targetEmoji) != 0 {
