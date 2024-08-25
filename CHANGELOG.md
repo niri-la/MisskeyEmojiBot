@@ -15,6 +15,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.5.0] - 2024-08-25
+### Added
+- add: version information to the /ni_rilana command, allowing users to easily check the current version within the command output.[`#99`](https://github.com/niri-la/MisskeyEmojiBot/pull/99)
+- add: applicant information to the emoji approval thread, providing more context for the approval process.[`#102`](https://github.com/niri-la/MisskeyEmojiBot/pull/102)
+- add: impl json save function. [`#102`](https://github.com/niri-la/MisskeyEmojiBot/pull/102)
+- add: ability to update emoji properties via the /change_emoji_detail command.  [`#104`](https://github.com/niri-la/MisskeyEmojiBot/pull/104)
+
+### Changed
+- improve: visibility of information sent via direct messages for better readability.[`#106`](https://github.com/niri-la/MisskeyEmojiBot/pull/106)
+
+### Fixed
+- fix: docker settings.[`#100`](https://github.com/niri-la/MisskeyEmojiBot/pull/101)
+
 ## [1.4.0] - 2024-08-25
 ### Changed
 - refactor: reorganize file structure for better clarity and maintainability [`#97`](https://github.com/niri-la/MisskeyEmojiBot/pull/97)
