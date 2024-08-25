@@ -1,6 +1,14 @@
 package main
 
 import (
+	"MisskeyEmojiBot/pkg/command"
+	"MisskeyEmojiBot/pkg/component"
+	"MisskeyEmojiBot/pkg/config"
+	"MisskeyEmojiBot/pkg/handler"
+	"MisskeyEmojiBot/pkg/handler/emoji"
+	"MisskeyEmojiBot/pkg/handler/processor"
+	"MisskeyEmojiBot/pkg/job"
+	"MisskeyEmojiBot/pkg/repository"
 	_ "embed"
 	"fmt"
 	"os"
@@ -8,95 +16,83 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/sirupsen/logrus"
-)
-
-// Bot parameters
-var (
-	GuildID               string
-	BotToken              string
-	AppID                 string
-	ModeratorID           string
-	BotID                 string
-	ModerationChannelName string
-	misskeyToken          string
-	misskeyHost           string
-	isDebug               bool
-	Session               *discordgo.Session
-	logger                *logrus.Logger
 )
 
 var moderationChannel *discordgo.Channel
 
-//go:embed message/ja-jp.yaml
-var messageJp string
+var Session *discordgo.Session
 
-func init() {
-
-	logger = logrus.New()
-	// Log as JSON instead of the default ASCII formatter.
-	//debug.SetFormatter(&debug.TextFormatter{})
-	logger.SetOutput(os.Stdout)
-	logger.SetFormatter(&logrus.TextFormatter{
-		ForceColors: true,
-	})
-}
-
-func init() {
-	loadEnvironments()
-	var err error
-	Session, err = discordgo.New("Bot " + BotToken)
-	if err != nil {
-		logger.WithFields(logrus.Fields{
-			"event": "init",
-		}).Error(err)
-		return
-	}
-	command()
-	moderationChannel, err = findChannelByName(Session, GuildID, ModerationChannelName)
-	registeredCommands := make([]*discordgo.ApplicationCommand, len(Commands))
-	for i, v := range Commands {
-		cmd, err := Session.ApplicationCommandCreate(AppID, GuildID, v)
-		if err != nil {
-			Session.Close()
-			logger.WithFields(logrus.Fields{
-				"event":     "commad",
-				"name":      v.Name,
-				"guild id":  GuildID,
-				"bot token": BotToken,
-			}).Panic(err)
-		}
-		registeredCommands[i] = cmd
-	}
-	if isDebug {
-		logger.SetLevel(logrus.TraceLevel)
-	} else {
-		logger.SetLevel(logrus.InfoLevel)
-	}
-}
+// //go:embed message/ja-jp.yaml
+// var messageJp string
 
 func main() {
-	logger.Info(":::::::::::::::::::::::")
-	logger.Info(":: Misskey Emoji Bot ")
-	logger.Info(":::::::::::::::::::::::")
-	logger.Info(":: initializing")
+	println(":::::::::::::::::::::::")
+	println(":: Misskey Emoji Bot ")
+	println(":::::::::::::::::::::::")
+	println(":: initializing")
+
+	config := config.LoadConfig()
+
+	Session, err := discordgo.New("Bot " + config.BotToken)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		os.Exit(1)
+	}
+
 	// start
 	Session.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
-		logger.Info(":: Bot starting")
-		logger.Info(":::::::::::::::::::::::")
+		println(":: Bot starting")
+		println(":::::::::::::::::::::::")
 	})
+
+	discordRepository := repository.NewDiscordRepository(Session)
+	emojiRepository := repository.NewEmojiRepository()
+	misskeyRepository, err := repository.NewMisskeyRepository(config.MisskeyToken, config.MisskeyHost)
+
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	emojiHandler := emoji.NewEmojiHandler(emojiRepository, discordRepository, misskeyRepository)
+	emojiRequestHandler := handler.NewEmojiRequestHandler()
+	emojiModerationReaction := emoji.NewEmojiModerationReactionHandler(emojiHandler, emojiRepository, discordRepository, config)
+	commandHandler := handler.NewCommandHandler(config, discordRepository)
+	componentHandler := handler.NewComponentHandler()
+
+	channelDeleteJob := job.NewChannelDeleteJob(emojiRepository, discordRepository)
+	emojiUpdateInfoJob := job.NewEmojiUpdateInfoJob(emojiRepository, misskeyRepository)
+
+	// register command
+	commandHandler.RegisterCommand(command.NewInitCommand(config, discordRepository))
+	commandHandler.RegisterCommand(command.NewNirilaCommand(discordRepository))
+
+	// register component
+	componentHandler.AddComponent(component.NewCreateEmojiChannelComponen(emojiRequestHandler, emojiRepository, discordRepository))
+	componentHandler.AddComponent(component.NewEmojiCancelRequestComponent(emojiRepository, discordRepository))
+	componentHandler.AddComponent(component.NewEmojiRequestComponen(config, emojiRepository, discordRepository))
+	componentHandler.AddComponent(component.NewEmojiRequestRetryComponen(emojiRequestHandler, emojiRepository, discordRepository))
+	componentHandler.AddComponent(component.NewInitComponent(config, discordRepository))
+	componentHandler.AddComponent(component.NewNsfwActiveComponent(emojiRequestHandler, emojiRepository, discordRepository))
+	componentHandler.AddComponent(component.NewNsfwInactiveComponent(emojiRequestHandler, emojiRepository, discordRepository))
+
+	// register processor
+	emojiRequestHandler.AddProcess(processor.NewUploadHandler())
+	emojiRequestHandler.AddProcess(processor.NewNameSettingHandler())
+	emojiRequestHandler.AddProcess(processor.NewCategoryHandler())
+	emojiRequestHandler.AddProcess(processor.NewTagHandler())
+	emojiRequestHandler.AddProcess(processor.NewLicenseHandlerHandler())
+	emojiRequestHandler.AddProcess(processor.NewOtherHandler())
+	emojiRequestHandler.AddProcess(processor.NewNsfwHandler())
+	emojiRequestHandler.AddProcess(processor.NewConfirmHandler())
 
 	// コンポーネントはインタラクションの一部なので、InteractionCreateHandlerを登録します。
 	Session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		switch i.Type {
 		case discordgo.InteractionApplicationCommand:
-			if h, ok := CommandHandlers[i.ApplicationCommandData().Name]; ok {
-				h(s, i)
-			}
+			commandHandler.Handle(s, i)
 		case discordgo.InteractionMessageComponent:
-			if h, ok := ComponentsHandlers[i.MessageComponentData().CustomID]; ok {
-				h(s, i)
-			}
+			componentHandler.Handle(s, i)
 		}
 	})
 
@@ -111,80 +107,37 @@ func main() {
 			return
 		}
 
-		emoji, err := GetEmoji(channel.Name[6:])
+		emoji, err := emojiRepository.GetEmoji(channel.Name[6:])
 
 		if err != nil {
-			logger.WithFields(logrus.Fields{
-				"user":    m.Author.Username,
-				"channel": channel.Name,
-				"message": m.Content,
-			}).Debug(err)
+			fmt.Printf("Error: %v\n", err)
 			return
 		}
 
-		logger.WithFields(logrus.Fields{
-			"user":    m.Author.Username,
-			"channel": channel.Name,
-			"message": m.Content,
-		}).Trace("Send emoji channel.")
-
-		Process(emoji, s, m)
+		emojiRequestHandler.Process(emoji, s, m)
 	})
 
-	Session.AddHandler(emojiModerationReaction)
-
-	_, err := Session.ApplicationCommandCreate(AppID, GuildID, &discordgo.ApplicationCommand{
-		Name:        "buttons",
-		Description: "Test the buttons if you got courage",
-	})
+	Session.AddHandler(emojiModerationReaction.HandleEmojiModerationReaction)
 
 	if err != nil {
-		logger.WithFields(logrus.Fields{
-			"event": "Session",
-		}).Fatal(err)
+		fmt.Printf("Error: %v\n", err)
+		return
 	}
 
 	err = Session.Open()
 	if err != nil {
-		logger.WithFields(logrus.Fields{
-			"event": "Session",
-		}).Fatal(err)
+		fmt.Printf("Error: %v\n", err)
+		return
 	}
 
 	defer Session.Close()
 
-	addJob()
+	channelDeleteJob.Run()
+	emojiUpdateInfoJob.Run()
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 	<-stop
-	logger.Info(":: Graceful shutdown")
-}
-
-func findChannelByName(s *discordgo.Session, guildID string, name string) (*discordgo.Channel, error) {
-	channels, err := s.GuildChannels(guildID)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, ch := range channels {
-		if ch.Name == name {
-			return ch, nil
-		}
-	}
-
-	return nil, fmt.Errorf("channel not found")
-}
-
-func returnFailedMessage(s *discordgo.Session, i *discordgo.InteractionCreate, reason string) {
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Flags:   discordgo.MessageFlagsEphemeral,
-			Content: "新たな申請のRequestに失敗しました。管理者に問い合わせを行ってください。",
-		},
-	})
-
-	logger.Error(reason)
+	println(":: Graceful shutdown")
 	return
 }
