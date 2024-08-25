@@ -1,7 +1,10 @@
 package repository
 
 import (
+	"MisskeyEmojiBot/pkg/config"
 	"MisskeyEmojiBot/pkg/entity"
+	"encoding/json"
+	"os"
 	"time"
 
 	"github.com/google/uuid"
@@ -17,14 +20,16 @@ type EmojiRepository interface {
 	Disapprove(emoji *entity.Emoji) error
 	Abort(emoji *entity.Emoji)
 	Remove(emoji entity.Emoji)
+	Save(emoji *entity.Emoji) error
 }
 
 type emojiRepository struct {
+	config           config.Config
 	emojiProcessList []entity.Emoji
 }
 
-func NewEmojiRepository() EmojiRepository {
-	return &emojiRepository{}
+func NewEmojiRepository(config config.Config) EmojiRepository {
+	return &emojiRepository{config: config}
 }
 
 func (r *emojiRepository) NewEmoji(user string) *entity.Emoji {
@@ -105,4 +110,9 @@ func (h *emojiRepository) Remove(emoji entity.Emoji) {
 
 func (h *emojiRepository) addEmoji(emoji entity.Emoji) {
 	h.emojiProcessList = append(h.emojiProcessList, emoji)
+}
+
+func (h *emojiRepository) Save(emoji *entity.Emoji) error {
+	jsonData, _ := json.MarshalIndent(emoji, "", "  ")
+	return os.WriteFile(h.config.SavePath+emoji.ID+".json", jsonData, 0644)
 }

@@ -27,7 +27,11 @@ func (h *emojiHandler) GetEmoji(id string) (*entity.Emoji, error) {
 }
 
 func (h *emojiHandler) Approve(emoji *entity.Emoji) error {
-	err := h.emojiRepository.Approve(emoji)
+	err := h.emojiRepository.Save(emoji)
+	if err != nil {
+		return err
+	}
+	err = h.emojiRepository.Approve(emoji)
 	if err != nil {
 		return err
 	}
