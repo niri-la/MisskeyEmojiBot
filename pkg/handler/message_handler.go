@@ -21,7 +21,8 @@ var languages = []language.Tag{
 	language.English,
 }
 
-//go:embed message/ja-jp.yaml
+// //go:embed message/ja-jp.yaml
+// var messageJp string
 var messageJp string
 
 type MessageHandler interface {

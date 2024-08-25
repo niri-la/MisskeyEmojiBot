@@ -4,7 +4,6 @@ import (
 	"MisskeyEmojiBot/pkg/entity"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/sirupsen/logrus"
 )
 
 type EmojiProcessHandler interface {
@@ -28,10 +27,15 @@ var workflow = map[int]string{
 }
 
 type EmojiRequestHandler interface {
+	AddProcess(processor EmojiProcessHandler)
+	Process(emoji *entity.Emoji, s *discordgo.Session, m *discordgo.MessageCreate) error
+	ProcessRequest(emoji *entity.Emoji, s *discordgo.Session, channelID string) error
+	ResetState(emoji *entity.Emoji, s *discordgo.Session)
 }
 
 type emojiRequestHandler struct {
 	reverseWorkflowMap map[string]int
+	processor          []EmojiProcessHandler
 }
 
 func NewEmojiRequestHandler() EmojiRequestHandler {
@@ -47,128 +51,65 @@ func (h *emojiRequestHandler) init() {
 	}
 }
 
-func (h *emojiRequestHandler) ProcessNextRequest(emoji *entity.Emoji, s *discordgo.Session, id string) bool {
-	requestIndex := h.reverseWorkflowMap[emoji.RequestState]
-	r1 := request[workflow[requestIndex+1]](emoji, s, id)
-	return r1.IsSuccess
+func (h *emojiRequestHandler) AddProcess(processor EmojiProcessHandler) {
+	h.processor = append(h.processor, processor)
 }
 
-func (h *emojiRequestHandler) Process(emoji *entity.Emoji, s *discordgo.Session, m *discordgo.MessageCreate) bool {
-	// 0. まずrequestを確認する(初期はRequest及びResponseは0である)
-	// 1. 両者が等しい時はRequestを1進める
-	// 2. RequestよりResponseが小さい場合はResponse待ちなのでResponseに値を渡す
-	// 3. Responseが完了したらResponseを1すすめる。
+func (h *emojiRequestHandler) Process(emoji *entity.Emoji, s *discordgo.Session, m *discordgo.MessageCreate) error {
+	// 0. まずNowStateIndexを確認し取得する。この時indexがprocess listより大きい場合は終了する
+	// 1. responseFlagがfalseの場合はRequestを実行する。
+	// 2. responseFlagがtrueの場合はResponseを実行する。
+	// 3. 成功したらフラグをfalseにしてindexを1進める
 	// 4. 1に戻る
-	// 最終的に次の値がない場合は終了する。
-	requestIndex := h.reverseWorkflowMap[emoji.RequestState]
-	responseIndex := h.reverseWorkflowMap[emoji.ResponseState]
 
-	if requestIndex == responseIndex {
-		r1 := request[workflow[requestIndex+1]](emoji, s, m.ChannelID)
-		return r1.IsSuccess
+	if emoji.NowStateIndex >= len(h.processor) {
+		return nil
 	}
 
-	if requestIndex > responseIndex {
-		r2 := response[workflow[responseIndex+1]](emoji, s, m)
-		if r2.IsSuccess {
-			h.Process(emoji, s, m)
+	processor := h.processor[emoji.NowStateIndex]
+
+	if !emoji.ResponseFlag {
+		r, err := processor.Request(emoji, s, m.ChannelID)
+		if err != nil {
+			return err
 		}
-		return r2.IsSuccess
+		if r.IsSuccess {
+			emoji.ResponseFlag = true
+		}
+	} else {
+		r, err := processor.Response(emoji, s, m)
+		if err != nil {
+			return err
+		}
+		if r.IsSuccess {
+			emoji.NowStateIndex++
+			emoji.ResponseFlag = false
+			return h.ProcessRequest(emoji, s, m.ChannelID)
+		}
 	}
-	return false
+
+	return nil
 }
 
-func first(emoji *entity.Emoji, s *discordgo.Session, id string) {
-	request[workflow[1]](emoji, s, id)
+func (h *emojiRequestHandler) ResetState(emoji *entity.Emoji, s *discordgo.Session) {
+	emoji.NowStateIndex = 0
+	emoji.ResponseFlag = false
 }
 
-func emojiModerationReaction(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
-	if m.UserID == s.State.User.ID {
-		return
+func (h *emojiRequestHandler) ProcessRequest(emoji *entity.Emoji, s *discordgo.Session, channelID string) error {
+	if emoji.NowStateIndex >= len(h.processor) {
+		return nil
 	}
 
-	channel, _ := s.Channel(m.ChannelID)
-	var emoji *entity.Emoji
-	found := false
+	processor := h.processor[emoji.NowStateIndex]
 
-	for _, e := range emojiProcessList {
-		if channel.Name == e.ID {
-			emoji = &e
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		return
-	}
-
-	emoji, err := GetEmoji(emoji.ID)
-
+	r, err := processor.Request(emoji, s, channelID)
 	if err != nil {
-		return
+		return err
+	}
+	if r.IsSuccess {
+		emoji.ResponseFlag = true
 	}
 
-	if emoji.IsFinish {
-		logger.WithFields(logrus.Fields{
-			"event": "emoji",
-			"id":    emoji.ID,
-			"user":  m.Member.User.Username,
-			"name":  emoji.Name,
-		}).Error("already finished emoji request.")
-		return
-	}
-
-	roleCount, err := countMembersWithRole(s, GuildID, ModeratorID)
-	if err != nil {
-		logger.WithFields(logrus.Fields{
-			"event":         "emoji",
-			"id":            emoji.ID,
-			"user":          m.Member.User.Username,
-			"name":          emoji.Name,
-			"moderation id": ModeratorID,
-		}).Error("Invalid moderation ID")
-		return
-	}
-
-	msg, err := s.ChannelMessage(channel.ID, m.MessageID)
-	if err != nil {
-		logger.WithFields(logrus.Fields{
-			"event": "emoji",
-			"id":    emoji.ID,
-			"user":  m.Member.User.Username,
-			"name":  emoji.Name,
-		}).Error(err)
-		return
-	}
-
-	var apCount = 0
-	var dsCount = 0
-
-	for _, reaction := range msg.Reactions {
-		if reaction.Emoji.Name == "🆗" {
-			apCount = reaction.Count
-		} else if reaction.Emoji.Name == "🆖" {
-			dsCount = reaction.Count
-		}
-
-	}
-
-	emoji.ApproveCount = apCount
-	emoji.DisapproveCount = dsCount
-
-	if emoji.DisapproveCount-1 >= roleCount || (isDebug && emoji.DisapproveCount-1 >= 1) {
-		emoji.disapprove()
-		s.ChannelMessageSend(m.ChannelID, "## 申請は却下されました")
-		closeThread(m.ChannelID, emoji.ModerationMessageID)
-		return
-	}
-
-	if emoji.ApproveCount-1 >= roleCount || (isDebug && emoji.ApproveCount-1 >= 1) {
-		emoji.approve()
-		s.ChannelMessageSend(m.ChannelID, "## 絵文字はアップロードされました")
-		closeThread(m.ChannelID, emoji.ModerationMessageID)
-		return
-	}
-
+	return nil
 }
