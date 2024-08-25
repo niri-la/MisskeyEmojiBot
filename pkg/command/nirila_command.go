@@ -12,16 +12,17 @@ type NirilaCommand interface {
 
 type nirilaCommand struct {
 	discordRepo repository.DiscordRepository
+	version     string
 }
 
-func NewNirilaCommand(discordRepo repository.DiscordRepository) handler.CommandInterface {
-	return &nirilaCommand{discordRepo: discordRepo}
+func NewNirilaCommand(discordRepo repository.DiscordRepository, version string) handler.CommandInterface {
+	return &nirilaCommand{discordRepo: discordRepo, version: version}
 }
 
 func (c *nirilaCommand) GetCommand() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
 		Name:        "ni_rilana",
-		Description: "Misskey Emoji Bot © 2023 KineL",
+		Description: "Misskey Emoji Bot © 2024 KineL",
 	}
 }
 
@@ -30,10 +31,10 @@ func (c *nirilaCommand) Execute(s *discordgo.Session, i *discordgo.InteractionCr
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Flags: discordgo.MessageFlagsEphemeral,
-			Content: "::: Misskey Emoji Bot \n" +
-				": Created by ni_rila (KineL)\n" +
-				": © 2023 KineL\n" +
-				":::::::::: \n",
+			Content: "# ::: Misskey Emoji Bot v" + c.version + "\n" +
+				"::: Created by ni_rila (KineL)\n" +
+				"::: © 2024 KineL\n" +
+				"### ------------ \n",
 		},
 	})
 }
