@@ -14,9 +14,9 @@ type Config struct {
 	ModeratorID           string
 	BotID                 string
 	ModerationChannelName string
-	misskeyToken          string
-	misskeyHost           string
-	isDebug               bool
+	MisskeyToken          string
+	MisskeyHost           string
+	IsDebug               bool
 }
 
 func LoadConfig() Config {
@@ -38,9 +38,9 @@ func LoadConfig() Config {
 		ModeratorID:           os.Getenv("moderator_role_id"),
 		BotID:                 os.Getenv("bot_role_id"),
 		ModerationChannelName: os.Getenv("moderation_channel_name"),
-		misskeyToken:          os.Getenv("misskey_token"),
-		misskeyHost:           os.Getenv("misskey_host"),
-		isDebug:               isDebug,
+		MisskeyToken:          os.Getenv("misskey_token"),
+		MisskeyHost:           os.Getenv("misskey_host"),
+		IsDebug:               isDebug,
 	}
 
 	// 全ての設定を読み込んだら、設定を返す
