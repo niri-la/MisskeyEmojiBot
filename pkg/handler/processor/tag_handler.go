@@ -3,6 +3,7 @@ package processor
 import (
 	"MisskeyEmojiBot/pkg/entity"
 	"MisskeyEmojiBot/pkg/handler"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -37,7 +38,7 @@ func (h *tagHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *disc
 		IsSuccess: false,
 	}
 
-	emoji.Tag = m.Content
+	emoji.Tag = h.formatTag(m.Content)
 	if m.Content == "tagなし" {
 		emoji.Tag = ""
 	}
@@ -46,4 +47,8 @@ func (h *tagHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *disc
 	s.ChannelMessageSend(m.ChannelID, "# ----------\n")
 
 	return response, nil
+}
+
+func (h *tagHandler) formatTag(tag string) string {
+	return strings.ReplaceAll(tag, "　", " ")
 }
