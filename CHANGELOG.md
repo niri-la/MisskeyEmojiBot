@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.5.1] - 2024-09-16
+### Fixed
+- fix: reset state when an error occurs during emoji application.[`#110`](https://github.com/niri-la/MisskeyEmojiBot/pull/110)
+- fix: convert full-width spaces to half-width spaces when setting tags.[`#108`](https://github.com/niri-la/MisskeyEmojiBot/pull/108)
+
 ## [1.5.0] - 2024-08-25
 ### Added
 - add: version information to the /ni_rilana command, allowing users to easily check the current version within the command output.[`#99`](https://github.com/niri-la/MisskeyEmojiBot/pull/99)
