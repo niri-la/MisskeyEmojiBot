@@ -56,7 +56,7 @@ func (c *emojiRequestRetryComponen) Execute(s *discordgo.Session, i *discordgo.I
 	})
 
 	// reset
-	emoji.Reset()
+	c.emojiRepository.ResetState(emoji)
 	c.emojiRequestHandler.ResetState(emoji, s)
 	c.emojiRequestHandler.ProcessRequest(emoji, s, i.ChannelID)
 }

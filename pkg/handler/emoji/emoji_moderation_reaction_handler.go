@@ -97,6 +97,10 @@ func (h *emojiModerationReactionHandler) HandleEmojiModerationReaction(s *discor
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 			s.ChannelMessageSend(m.ChannelID, "絵文字アップロードに失敗しました。"+err.Error())
+			isSensitive := emoji.IsSensitive
+			h.emojiRepository.ResetState(emoji)
+			emoji.IsRequested = true
+			emoji.IsSensitive = isSensitive
 			return
 		}
 		s.ChannelMessageSend(m.ChannelID, "## 絵文字はアップロードされました")

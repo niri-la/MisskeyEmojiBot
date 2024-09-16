@@ -21,6 +21,7 @@ type EmojiRepository interface {
 	Abort(emoji *entity.Emoji)
 	Remove(emoji entity.Emoji)
 	Save(emoji *entity.Emoji) error
+	ResetState(emoji *entity.Emoji) error
 }
 
 type emojiRepository struct {
@@ -94,7 +95,7 @@ func (h *emojiRepository) Disapprove(emoji *entity.Emoji) error {
 
 func (h *emojiRepository) Abort(emoji *entity.Emoji) {
 	h.Remove(*emoji)
-	emoji.Reset()
+	h.ResetState(emoji)
 	emoji.IsFinish = true
 }
 
@@ -115,4 +116,11 @@ func (h *emojiRepository) addEmoji(emoji entity.Emoji) {
 func (h *emojiRepository) Save(emoji *entity.Emoji) error {
 	jsonData, _ := json.MarshalIndent(emoji, "", "  ")
 	return os.WriteFile(h.config.SavePath+emoji.ID+".json", jsonData, 0644)
+}
+
+func (h *emojiRepository) ResetState(emoji *entity.Emoji) error {
+	emoji.IsSensitive = false
+	emoji.IsAccepted = false
+	emoji.IsRequested = false
+	return nil
 }
