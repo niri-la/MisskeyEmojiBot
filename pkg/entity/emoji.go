@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"os"
 	"path/filepath"
 	"time"
 )
@@ -40,20 +39,6 @@ type Emoji struct {
 	ModerationMessageID string    `json:"moderationMessageID"`
 	UserThreadID        string    `json:"userThreadID"`
 	StartAt             time.Time `json:"startAt"`
-}
-
-func (emoji *Emoji) Reset() {
-	emoji.IsSensitive = false
-	emoji.IsAccepted = false
-	emoji.IsRequested = false
-}
-
-func (emoji *Emoji) deleteEmoji(filePath string) error {
-	err := os.Remove(filePath)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func IsValidEmojiFile(fileName string) bool {

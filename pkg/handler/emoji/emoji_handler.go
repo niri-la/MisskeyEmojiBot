@@ -9,6 +9,7 @@ type EmojiHandler interface {
 	GetEmoji(id string) (*entity.Emoji, error)
 	Approve(emoji *entity.Emoji) error
 	Disapprove(emoji *entity.Emoji) error
+	ResetState(emoji *entity.Emoji) error
 	EmojiReconstruction() []entity.Emoji
 }
 
@@ -66,4 +67,8 @@ func (h *emojiHandler) Abort(emoji entity.Emoji) {
 
 func (h *emojiHandler) Remove(emoji entity.Emoji) {
 	h.emojiRepository.Remove(emoji)
+}
+
+func (h *emojiHandler) ResetState(emoji *entity.Emoji) error {
+	return h.emojiRepository.ResetState(emoji)
 }
