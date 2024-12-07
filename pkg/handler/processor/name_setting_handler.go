@@ -38,7 +38,10 @@ func (h *nameSettingHandler) Response(emoji *entity.Emoji, s *discordgo.Session,
 		IsSuccess: false,
 	}
 
-	if len(m.Content) <= 1 {
+	input := strings.TrimPrefix(m.Content, ":")
+	input = strings.TrimSuffix(input, ":")
+
+	if len(input) <= 1 {
 		_, err := s.ChannelMessageSend(m.ChannelID, ":2文字以上入力してください。")
 		if err != nil {
 
@@ -47,7 +50,7 @@ func (h *nameSettingHandler) Response(emoji *entity.Emoji, s *discordgo.Session,
 		return response, nil
 	}
 	reg := regexp.MustCompile(`[^a-z0-9_]+`)
-	input := reg.ReplaceAllStringFunc(strings.ToLower(m.Content), func(s string) string {
+	input = reg.ReplaceAllStringFunc(strings.ToLower(input), func(s string) string {
 		return "_"
 	})
 	s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+input+"` ]")
