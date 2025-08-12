@@ -1,1 +1,12 @@
 ﻿.idea
+
+# Claude, Gemini, Cursor, Kiroの設定ルール
+GEMINI.md
+CLAUDE.md
+.cursor/
+.kiro/
+.aiignore
+.cursorignore
+
+# 共通ドキュメント
+/AI/COMMON/*.md

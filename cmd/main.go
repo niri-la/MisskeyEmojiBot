@@ -60,7 +60,11 @@ func main() {
 	}
 
 	discordRepository := repository.NewDiscordRepository(Session)
-	emojiRepository := repository.NewEmojiRepository(config)
+	emojiRepository, err := repository.NewSQLiteEmojiRepository(config)
+	if err != nil {
+		fmt.Printf("Error creating SQLite repository: %v\n", err)
+		os.Exit(1)
+	}
 	misskeyRepository, err := repository.NewMisskeyRepository(config.MisskeyToken, config.MisskeyHost)
 
 	if err != nil {
@@ -147,6 +151,12 @@ func main() {
 
 	defer Session.Close()
 
+	// Check for pending emoji requests in database on startup
+	pendingEmojis := emojiRepository.GetEmojis()
+	if len(pendingEmojis) > 0 {
+		fmt.Printf(":: Found %d pending emoji request(s) in database\n", len(pendingEmojis))
+	}
+
 	channelDeleteJob.Run()
 	emojiUpdateInfoJob.Run()
 
@@ -154,5 +164,10 @@ func main() {
 	signal.Notify(stop, os.Interrupt)
 	<-stop
 	println(":: Graceful shutdown")
+	
+	// Close database connection
+	if closer, ok := emojiRepository.(interface{ Close() error }); ok {
+		closer.Close()
+	}
 	return
 }
