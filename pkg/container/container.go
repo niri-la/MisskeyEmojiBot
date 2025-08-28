@@ -114,7 +114,7 @@ func (c *Container) registerComponents() {
 }
 
 func (c *Container) registerProcessors() {
-	c.EmojiRequestHandler.AddProcess(processor.NewUploadHandler())
+	c.EmojiRequestHandler.AddProcess(processor.NewUploadHandler(*c.Config))
 	c.EmojiRequestHandler.AddProcess(processor.NewNameSettingHandler())
 	c.EmojiRequestHandler.AddProcess(processor.NewCategoryHandler())
 	c.EmojiRequestHandler.AddProcess(processor.NewTagHandler())
