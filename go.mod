@@ -9,8 +9,9 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/yitsushi/go-misskey v1.1.6
 	golang.org/x/text v0.11.0
-	gopkg.in/yaml.v3 v3.0.1
 )
+
+require gopkg.in/yaml.v3 v3.0.1 // indirect
 
 require (
 	github.com/gorilla/websocket v1.4.2 // indirect
