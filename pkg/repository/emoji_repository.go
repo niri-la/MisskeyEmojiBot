@@ -3,12 +3,12 @@ package repository
 import (
 	"MisskeyEmojiBot/pkg/config"
 	"MisskeyEmojiBot/pkg/entity"
+	"MisskeyEmojiBot/pkg/errors"
 	"encoding/json"
 	"os"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 )
 
 type EmojiRepository interface {
@@ -55,7 +55,7 @@ func (h *emojiRepository) GetEmoji(id string) (*entity.Emoji, error) {
 			return &h.emojiProcessList[i], nil
 		}
 	}
-	return nil, errors.New("emoji not found")
+	return nil, errors.EmojiNotFound(id)
 }
 
 func (h *emojiRepository) EmojiReconstruction() []entity.Emoji {
@@ -76,7 +76,7 @@ func (h *emojiRepository) EmojiReconstruction() []entity.Emoji {
 
 func (h *emojiRepository) Approve(emoji *entity.Emoji) error {
 	if emoji.IsAccepted {
-		return errors.New("Emoji is already accepted")
+		return errors.EmojiAlready("emoji is already accepted")
 	}
 	emoji.IsAccepted = true
 	emoji.IsFinish = true
@@ -85,7 +85,7 @@ func (h *emojiRepository) Approve(emoji *entity.Emoji) error {
 
 func (h *emojiRepository) Disapprove(emoji *entity.Emoji) error {
 	if emoji.IsAccepted {
-		return errors.New("Emoji is already accepted")
+		return errors.EmojiAlready("emoji is already accepted")
 	}
 
 	emoji.IsAccepted = false
@@ -114,8 +114,16 @@ func (h *emojiRepository) addEmoji(emoji entity.Emoji) {
 }
 
 func (h *emojiRepository) Save(emoji *entity.Emoji) error {
-	jsonData, _ := json.MarshalIndent(emoji, "", "  ")
-	return os.WriteFile(h.config.SavePath+emoji.ID+".json", jsonData, 0644)
+	jsonData, err := json.MarshalIndent(emoji, "", "  ")
+	if err != nil {
+		return errors.FileOperation("failed to marshal emoji data to JSON", err)
+	}
+	
+	filePath := h.config.SavePath + emoji.ID + ".json"
+	if err := os.WriteFile(filePath, jsonData, 0644); err != nil {
+		return errors.FileOperation("failed to save emoji data", err)
+	}
+	return nil
 }
 
 func (h *emojiRepository) ResetState(emoji *entity.Emoji) error {

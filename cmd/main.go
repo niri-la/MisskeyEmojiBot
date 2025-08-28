@@ -4,6 +4,7 @@ import (
 	"MisskeyEmojiBot/pkg/command"
 	"MisskeyEmojiBot/pkg/component"
 	"MisskeyEmojiBot/pkg/config"
+	"MisskeyEmojiBot/pkg/errors"
 	"MisskeyEmojiBot/pkg/handler"
 	"MisskeyEmojiBot/pkg/handler/emoji"
 	"MisskeyEmojiBot/pkg/handler/processor"
@@ -32,20 +33,24 @@ func main() {
 	println(":::::::::::::::::::::::")
 	println(":: initializing")
 
-	config := config.LoadConfig()
+	if err := run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run() error {
+	config, err := config.LoadConfig()
+	if err != nil {
+		return err
+	}
 
 	Session, err := discordgo.New("Bot " + config.BotToken)
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
+		return errors.Discord("failed to initialize Discord bot", err)
 	}
 
-	_, err = os.Stat(config.SavePath)
-	if os.IsNotExist(err) {
-		err := os.Mkdir(config.SavePath, os.ModePerm)
-		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-		}
+	if err := ensureSaveDirectory(config.SavePath); err != nil {
+		return err
 	}
 
 	// start
@@ -56,38 +61,36 @@ func main() {
 
 	version, err := os.ReadFile("version.txt")
 	if err != nil {
-		log.Fatal(err)
+		return errors.FileOperation("failed to read version file", err)
 	}
 
 	discordRepository := repository.NewDiscordRepository(Session)
-	emojiRepository := repository.NewEmojiRepository(config)
+	emojiRepository := repository.NewEmojiRepository(*config)
 	misskeyRepository, err := repository.NewMisskeyRepository(config.MisskeyToken, config.MisskeyHost)
-
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
+		return errors.Misskey("failed to initialize Misskey API", err)
 	}
 
 	emojiHandler := emoji.NewEmojiHandler(emojiRepository, discordRepository, misskeyRepository)
 	emojiRequestHandler := handler.NewEmojiRequestHandler()
-	emojiModerationReaction := emoji.NewEmojiModerationReactionHandler(emojiHandler, emojiRepository, discordRepository, config)
-	commandHandler := handler.NewCommandHandler(config, discordRepository)
+	emojiModerationReaction := emoji.NewEmojiModerationReactionHandler(emojiHandler, emojiRepository, discordRepository, *config)
+	commandHandler := handler.NewCommandHandler(*config, discordRepository)
 	componentHandler := handler.NewComponentHandler()
 
 	channelDeleteJob := job.NewChannelDeleteJob(emojiRepository, discordRepository)
 	emojiUpdateInfoJob := job.NewEmojiUpdateInfoJob(emojiRepository, misskeyRepository)
 
 	// register command
-	commandHandler.RegisterCommand(command.NewInitCommand(config, discordRepository))
+	commandHandler.RegisterCommand(command.NewInitCommand(*config, discordRepository))
 	commandHandler.RegisterCommand(command.NewNirilaCommand(discordRepository, string(version)))
-	commandHandler.RegisterCommand(command.NewEmojiDetailChangeCommand(config, emojiRepository, discordRepository))
+	commandHandler.RegisterCommand(command.NewEmojiDetailChangeCommand(*config, emojiRepository, discordRepository))
 
 	// register component
 	componentHandler.AddComponent(component.NewCreateEmojiChannelComponen(emojiRequestHandler, emojiRepository, discordRepository))
 	componentHandler.AddComponent(component.NewEmojiCancelRequestComponent(emojiRepository, discordRepository))
-	componentHandler.AddComponent(component.NewEmojiRequestComponen(config, emojiRepository, discordRepository))
+	componentHandler.AddComponent(component.NewEmojiRequestComponen(*config, emojiRepository, discordRepository))
 	componentHandler.AddComponent(component.NewEmojiRequestRetryComponen(emojiRequestHandler, emojiRepository, discordRepository))
-	componentHandler.AddComponent(component.NewInitComponent(config, discordRepository))
+	componentHandler.AddComponent(component.NewInitComponent(*config, discordRepository))
 	componentHandler.AddComponent(component.NewNsfwActiveComponent(emojiRequestHandler, emojiRepository, discordRepository))
 	componentHandler.AddComponent(component.NewNsfwInactiveComponent(emojiRequestHandler, emojiRepository, discordRepository))
 
@@ -135,16 +138,13 @@ func main() {
 	Session.AddHandler(emojiModerationReaction.HandleEmojiModerationReaction)
 
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return
+		return fmt.Errorf("error: %v", err)
 	}
 
 	err = Session.Open()
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return
+		return errors.Discord("failed to open Discord connection", err)
 	}
-
 	defer Session.Close()
 
 	channelDeleteJob.Run()
@@ -154,5 +154,15 @@ func main() {
 	signal.Notify(stop, os.Interrupt)
 	<-stop
 	println(":: Graceful shutdown")
-	return
+	return nil
+}
+
+func ensureSaveDirectory(savePath string) error {
+	_, err := os.Stat(savePath)
+	if os.IsNotExist(err) {
+		if err := os.MkdirAll(savePath, os.ModePerm); err != nil {
+			return errors.FileOperation("failed to create save directory", err)
+		}
+	}
+	return nil
 }
