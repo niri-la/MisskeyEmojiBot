@@ -6,8 +6,7 @@ import (
 )
 
 var (
-	emojiProcessList []Emoji
-	validExtensions  = map[string]bool{
+	validExtensions = map[string]bool{
 		".png":  true,
 		".jpg":  true,
 		".jpeg": true,
