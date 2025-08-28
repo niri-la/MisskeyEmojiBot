@@ -96,11 +96,13 @@ func (h *emojiModerationReactionHandler) HandleEmojiModerationReaction(s *discor
 		err := h.emojiHandler.Approve(emoji)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
-			s.ChannelMessageSend(m.ChannelID, "絵文字アップロードに失敗しました。"+err.Error())
-			isSensitive := emoji.IsSensitive
-			h.emojiRepository.ResetState(emoji)
-			emoji.IsRequested = true
-			emoji.IsSensitive = isSensitive
+			s.ChannelMessageSend(m.ChannelID, "絵文字アップロードに失敗しました。"+err.Error()+
+				"\n\n再度モデレーション承認を行うことで、アップロードをリトライできます。")
+			// アップロード失敗時は承認プロセスをやり直せるように状態をリセット
+			emoji.ApproveCount = 0
+			emoji.DisapproveCount = 0
+			emoji.IsAccepted = false
+			emoji.IsFinish = false
 			return
 		}
 		s.ChannelMessageSend(m.ChannelID, "## 絵文字はアップロードされました")
