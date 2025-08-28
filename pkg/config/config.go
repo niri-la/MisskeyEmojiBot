@@ -55,15 +55,15 @@ func LoadConfig() (*Config, error) {
 
 func (c *Config) Validate() error {
 	requiredFields := map[string]string{
-		"guild_id":               c.GuildID,
-		"bot_token":              c.BotToken,
-		"application_id":         c.AppID,
-		"moderator_role_id":      c.ModeratorID,
-		"bot_role_id":            c.BotID,
+		"guild_id":                c.GuildID,
+		"bot_token":               c.BotToken,
+		"application_id":          c.AppID,
+		"moderator_role_id":       c.ModeratorID,
+		"bot_role_id":             c.BotID,
 		"moderation_channel_name": c.ModerationChannelName,
-		"misskey_token":          c.MisskeyToken,
-		"misskey_host":           c.MisskeyHost,
-		"save_path":              c.SavePath,
+		"misskey_token":           c.MisskeyToken,
+		"misskey_host":            c.MisskeyHost,
+		"save_path":               c.SavePath,
 	}
 
 	var missingFields []string
@@ -75,10 +75,6 @@ func (c *Config) Validate() error {
 
 	if len(missingFields) > 0 {
 		return errors.Validation("missing required environment variables: " + strings.Join(missingFields, ", "))
-	}
-
-	if !strings.HasPrefix(c.MisskeyHost, "http://") && !strings.HasPrefix(c.MisskeyHost, "https://") {
-		return errors.Validation("misskey_host must start with http:// or https://")
 	}
 
 	if c.SavePath != "" && !strings.HasSuffix(c.SavePath, "/") {
