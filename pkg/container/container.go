@@ -114,6 +114,7 @@ func (c *Container) registerCommands() {
 	c.CommandHandler.RegisterCommand(command.NewInitCommand(*c.Config, c.DiscordRepository))
 	c.CommandHandler.RegisterCommand(command.NewNirilaCommand(c.DiscordRepository, c.Version))
 	c.CommandHandler.RegisterCommand(command.NewEmojiDetailChangeCommand(*c.Config, c.EmojiRepository, c.DiscordRepository))
+	c.CommandHandler.RegisterCommand(command.NewEmojiListCommand(c.EmojiRepository))
 }
 
 func (c *Container) registerComponents() {
