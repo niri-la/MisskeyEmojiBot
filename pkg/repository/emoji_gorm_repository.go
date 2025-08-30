@@ -72,7 +72,7 @@ func (r *emojiGormRepository) EmojiReconstruction() []entity.Emoji {
 	r.db.Where("is_finish = ? AND is_accepted = ?", true, true).Find(&acceptedEmojis)
 
 	// Delete finished emojis from database
-	r.db.Where("is_finish = ?", true).Delete(&entity.Emoji{})
+	// r.db.Where("is_finish = ?", true).Delete(&entity.Emoji{})
 
 	return acceptedEmojis
 }
