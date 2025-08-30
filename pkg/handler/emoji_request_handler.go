@@ -2,6 +2,7 @@ package handler
 
 import (
 	"MisskeyEmojiBot/pkg/entity"
+	"MisskeyEmojiBot/pkg/repository"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -36,10 +37,13 @@ type EmojiRequestHandler interface {
 type emojiRequestHandler struct {
 	reverseWorkflowMap map[string]int
 	processor          []EmojiProcessHandler
+	emojiRepository    repository.EmojiRepository
 }
 
-func NewEmojiRequestHandler() EmojiRequestHandler {
-	handler := &emojiRequestHandler{}
+func NewEmojiRequestHandler(emojiRepo repository.EmojiRepository) EmojiRequestHandler {
+	handler := &emojiRequestHandler{
+		emojiRepository: emojiRepo,
+	}
 	handler.init()
 	return handler
 }
@@ -75,6 +79,7 @@ func (h *emojiRequestHandler) Process(emoji *entity.Emoji, s *discordgo.Session,
 		}
 		if r.IsSuccess {
 			emoji.ResponseFlag = true
+			h.emojiRepository.Save(emoji)
 		}
 	} else {
 		r, err := processor.Response(emoji, s, m)
@@ -84,6 +89,7 @@ func (h *emojiRequestHandler) Process(emoji *entity.Emoji, s *discordgo.Session,
 		if r.IsSuccess {
 			emoji.NowStateIndex++
 			emoji.ResponseFlag = false
+			h.emojiRepository.Save(emoji)
 			return h.ProcessRequest(emoji, s, m.ChannelID)
 		}
 	}
@@ -109,6 +115,7 @@ func (h *emojiRequestHandler) ProcessRequest(emoji *entity.Emoji, s *discordgo.S
 	}
 	if r.IsSuccess {
 		emoji.ResponseFlag = true
+		h.emojiRepository.Save(emoji)
 	}
 
 	return nil

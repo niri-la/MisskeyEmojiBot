@@ -76,7 +76,7 @@ func NewContainer(cfg *config.Config) (*Container, error) {
 	
 	// Initialize handlers
 	emojiHandler := emoji.NewEmojiHandler(emojiRepo, discordRepo, misskeyRepo)
-	emojiRequestHandler := handler.NewEmojiRequestHandler()
+	emojiRequestHandler := handler.NewEmojiRequestHandler(emojiRepo)
 	emojiModerationReaction := emoji.NewEmojiModerationReactionHandler(emojiHandler, emojiRepo, discordRepo, *cfg)
 	commandHandler := handler.NewCommandHandler(*cfg, discordRepo)
 	componentHandler := handler.NewComponentHandler()

@@ -99,6 +99,19 @@ func (c *emojiDetailChangeCommand) Execute(s *discordgo.Session, i *discordgo.In
 		return
 	}
 
+	// Save changes to database
+	err = c.emojiRepository.Save(emoji)
+	if err != nil {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Flags:   discordgo.MessageFlagsEphemeral,
+				Content: "保存に失敗しました / Failed to save changes.",
+			},
+		})
+		return
+	}
+
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
