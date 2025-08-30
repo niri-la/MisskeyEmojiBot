@@ -19,6 +19,7 @@ type Config struct {
 	MisskeyToken          string
 	MisskeyHost           string
 	SavePath              string
+	DatabasePath          string
 	IsDebug               bool
 }
 
@@ -43,7 +44,13 @@ func LoadConfig() (*Config, error) {
 		MisskeyToken:          strings.TrimSpace(os.Getenv("misskey_token")),
 		MisskeyHost:           strings.TrimSpace(os.Getenv("misskey_host")),
 		SavePath:              strings.TrimSpace(os.Getenv("save_path")),
+		DatabasePath:          strings.TrimSpace(os.Getenv("database_path")),
 		IsDebug:               isDebug,
+	}
+
+	// Set default values
+	if config.DatabasePath == "" {
+		config.DatabasePath = "./emoji_bot.db"
 	}
 
 	if err := config.Validate(); err != nil {

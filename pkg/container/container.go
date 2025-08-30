@@ -4,6 +4,7 @@ import (
 	"MisskeyEmojiBot/pkg/command"
 	"MisskeyEmojiBot/pkg/component"
 	"MisskeyEmojiBot/pkg/config"
+	"MisskeyEmojiBot/pkg/database"
 	"MisskeyEmojiBot/pkg/errors"
 	"MisskeyEmojiBot/pkg/handler"
 	"MisskeyEmojiBot/pkg/handler/emoji"
@@ -54,9 +55,20 @@ func NewContainer(cfg *config.Config) (*Container, error) {
 		return nil, errors.Discord("failed to initialize Discord bot", err)
 	}
 	
+	// Initialize database
+	db, err := database.NewDatabase(cfg.DatabasePath)
+	if err != nil {
+		return nil, errors.FileOperation("failed to initialize database", err)
+	}
+	
+	// Run migrations
+	if err := db.Migrate(); err != nil {
+		return nil, err
+	}
+	
 	// Initialize repositories
 	discordRepo := repository.NewDiscordRepository(session)
-	emojiRepo := repository.NewEmojiRepository(*cfg)
+	emojiRepo := repository.NewEmojiGormRepository(db, *cfg)
 	misskeyRepo, err := repository.NewMisskeyRepository(cfg.MisskeyToken, cfg.MisskeyHost)
 	if err != nil {
 		return nil, errors.Misskey("failed to initialize Misskey API", err)
@@ -64,7 +76,7 @@ func NewContainer(cfg *config.Config) (*Container, error) {
 	
 	// Initialize handlers
 	emojiHandler := emoji.NewEmojiHandler(emojiRepo, discordRepo, misskeyRepo)
-	emojiRequestHandler := handler.NewEmojiRequestHandler()
+	emojiRequestHandler := handler.NewEmojiRequestHandler(emojiRepo)
 	emojiModerationReaction := emoji.NewEmojiModerationReactionHandler(emojiHandler, emojiRepo, discordRepo, *cfg)
 	commandHandler := handler.NewCommandHandler(*cfg, discordRepo)
 	componentHandler := handler.NewComponentHandler()

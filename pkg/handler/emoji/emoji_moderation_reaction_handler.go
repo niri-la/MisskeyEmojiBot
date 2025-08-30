@@ -78,6 +78,7 @@ func (h *emojiModerationReactionHandler) HandleEmojiModerationReaction(s *discor
 
 	emoji.ApproveCount = apCount
 	emoji.DisapproveCount = dsCount
+	h.emojiRepository.Save(emoji)
 
 	if emoji.DisapproveCount-1 >= roleCount || (h.config.IsDebug && emoji.DisapproveCount-1 >= 1) {
 		err := h.emojiHandler.Disapprove(emoji)
@@ -103,6 +104,7 @@ func (h *emojiModerationReactionHandler) HandleEmojiModerationReaction(s *discor
 			emoji.DisapproveCount = 0
 			emoji.IsAccepted = false
 			emoji.IsFinish = false
+			h.emojiRepository.Save(emoji)
 			return
 		}
 		s.ChannelMessageSend(m.ChannelID, "## 絵文字はアップロードされました")
