@@ -139,4 +139,5 @@ func (c *emojiRequestComponen) Execute(s *discordgo.Session, i *discordgo.Intera
 
 	_ = s.MessageReactionAdd(thread.ID, lastMessage.ID, "🆗")
 	_ = s.MessageReactionAdd(thread.ID, lastMessage.ID, "🆖")
+	_ = c.emojiRepository.Save(emoji)
 }
