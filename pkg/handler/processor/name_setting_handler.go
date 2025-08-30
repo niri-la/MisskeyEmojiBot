@@ -61,60 +61,6 @@ func (h *nameSettingHandler) Response(emoji *entity.Emoji, s *discordgo.Session,
 		return "_"
 	})
 	_, _ = s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+input+"` ]")
-	
-	// Issue #72: 既存絵文字の重複チェック
-	if h.misskeyRepo != nil {
-		exists, existingEmoji, err := h.misskeyRepo.CheckEmojiExists(input)
-		if err != nil {
-			_, _ = s.ChannelMessageSend(m.ChannelID, "⚠️ 絵文字の重複チェックに失敗しました。処理を続行します。")
-		} else if exists {
-			// 重複している場合、上書き確認UIを表示
-			components := []discordgo.MessageComponent{
-				discordgo.ActionsRow{
-					Components: []discordgo.MessageComponent{
-						discordgo.Button{
-							Label:    "はい、上書きします",
-							Style:    discordgo.PrimaryButton,
-							CustomID: "emoji_overwrite_confirm:yes:" + emoji.ID,
-							Emoji: discordgo.ComponentEmoji{
-								Name: "✅",
-							},
-						},
-						discordgo.Button{
-							Label:    "いいえ、別の名前にします", 
-							Style:    discordgo.SecondaryButton,
-							CustomID: "emoji_overwrite_confirm:no:" + emoji.ID,
-							Emoji: discordgo.ComponentEmoji{
-								Name: "❌",
-							},
-						},
-					},
-				},
-			}
-			
-			overwriteMsg := "⚠️ **絵文字 `" + input + "` は既に存在します**\n\n"
-			if existingEmoji != nil {
-				overwriteMsg += "既存の絵文字情報:\n"
-				// TODO: 既存絵文字の詳細情報を表示（カテゴリ、タグなど）
-			}
-			overwriteMsg += "\n上書きしますか？"
-			
-			_, err = s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
-				Content:    overwriteMsg,
-				Components: components,
-			})
-			if err != nil {
-				_, _ = s.ChannelMessageSend(m.ChannelID, "上書き確認の表示に失敗しました。")
-				return response, nil
-			}
-			
-			// 上書き確認待ちの状態にするため、まだ成功にしない
-			emoji.Name = input // 名前は保存しておく
-			response.IsSuccess = false
-			return response, nil
-		}
-	}
-	
 	_, _ = s.ChannelMessageSend(m.ChannelID, "# ----------\n")
 	emoji.Name = input
 	response.IsSuccess = true
