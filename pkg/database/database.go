@@ -1,14 +1,15 @@
 package database
 
 import (
-	"MisskeyEmojiBot/pkg/entity"
-	"MisskeyEmojiBot/pkg/errors"
 	"os"
 	"path/filepath"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"MisskeyEmojiBot/pkg/entity"
+	"MisskeyEmojiBot/pkg/errors"
 )
 
 type DB struct {

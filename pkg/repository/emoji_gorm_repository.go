@@ -1,13 +1,14 @@
 package repository
 
 import (
+	"time"
+
+	"github.com/google/uuid"
+
 	"MisskeyEmojiBot/pkg/config"
 	"MisskeyEmojiBot/pkg/database"
 	"MisskeyEmojiBot/pkg/entity"
 	"MisskeyEmojiBot/pkg/errors"
-	"time"
-
-	"github.com/google/uuid"
 )
 
 type emojiGormRepository struct {

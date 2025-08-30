@@ -1,14 +1,15 @@
 package bot
 
 import (
-	"MisskeyEmojiBot/pkg/container"
-	"MisskeyEmojiBot/pkg/errors"
 	"fmt"
 	"os"
 	"os/signal"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+
+	"MisskeyEmojiBot/pkg/container"
+	"MisskeyEmojiBot/pkg/errors"
 )
 
 type Bot struct {

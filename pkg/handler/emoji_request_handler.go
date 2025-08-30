@@ -1,10 +1,10 @@
 package handler
 
 import (
+	"github.com/bwmarrin/discordgo"
+
 	"MisskeyEmojiBot/pkg/entity"
 	"MisskeyEmojiBot/pkg/repository"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 type EmojiProcessHandler interface {

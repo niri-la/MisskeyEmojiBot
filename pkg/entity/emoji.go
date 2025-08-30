@@ -38,7 +38,7 @@ type Emoji struct {
 	ModerationMessageID string    `json:"moderationMessageID"`
 	UserThreadID        string    `json:"userThreadID"`
 	StartAt             time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"startAt"`
-	
+
 	// GORM timestamps
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"createdAt"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updatedAt"`
