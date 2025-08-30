@@ -97,9 +97,4 @@ func (b *Bot) setupHandlers() error {
 func (b *Bot) startJobs() {
 	b.container.ChannelDeleteJob.Run()
 	b.container.EmojiUpdateInfoJob.Run()
-	
-	// データベースバックアップJob（設定で有効化されている場合のみ）
-	if err := b.container.DatabaseBackupJob.Run(); err != nil {
-		fmt.Printf("Database backup failed: %v\n", err)
-	}
 }
