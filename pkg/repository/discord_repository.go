@@ -37,7 +37,7 @@ func (r *discordRepository) SendDirectMessage(requestUser string, message string
 	if err != nil {
 		return err
 	}
-	r.session.ChannelMessageSend(direct.ID, message)
+	_, _ = r.session.ChannelMessageSend(direct.ID, message)
 	return nil
 }
 

@@ -49,7 +49,7 @@ func (r *misskeyRepository) UploadEmoji(userEmoji *entity.Emoji) error {
 		return err
 	}
 
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	fileBytes, err := io.ReadAll(file)
 

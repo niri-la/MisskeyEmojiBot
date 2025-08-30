@@ -46,23 +46,23 @@ func (r *emojiRepository) NewEmoji(user string) *entity.Emoji {
 	return &emoji
 }
 
-func (h *emojiRepository) GetEmojis() []entity.Emoji {
-	return h.emojiProcessList
+func (r *emojiRepository) GetEmojis() []entity.Emoji {
+	return r.emojiProcessList
 }
 
-func (h *emojiRepository) GetEmoji(id string) (*entity.Emoji, error) {
-	for i := range h.emojiProcessList {
-		if h.emojiProcessList[i].ID == id {
-			return &h.emojiProcessList[i], nil
+func (r *emojiRepository) GetEmoji(id string) (*entity.Emoji, error) {
+	for i := range r.emojiProcessList {
+		if r.emojiProcessList[i].ID == id {
+			return &r.emojiProcessList[i], nil
 		}
 	}
 	return nil, errors.EmojiNotFound(id)
 }
 
-func (h *emojiRepository) EmojiReconstruction() []entity.Emoji {
+func (r *emojiRepository) EmojiReconstruction() []entity.Emoji {
 	var accepted []entity.Emoji
 	var reconstruction []entity.Emoji
-	for _, emoji := range h.emojiProcessList {
+	for _, emoji := range r.emojiProcessList {
 		if emoji.IsFinish {
 			if emoji.IsAccepted {
 				accepted = append(accepted, emoji)
@@ -71,11 +71,11 @@ func (h *emojiRepository) EmojiReconstruction() []entity.Emoji {
 			reconstruction = append(reconstruction, emoji)
 		}
 	}
-	h.emojiProcessList = reconstruction
+	r.emojiProcessList = reconstruction
 	return accepted
 }
 
-func (h *emojiRepository) Approve(emoji *entity.Emoji) error {
+func (r *emojiRepository) Approve(emoji *entity.Emoji) error {
 	if emoji.IsAccepted {
 		return errors.EmojiAlready("emoji is already accepted")
 	}
@@ -84,7 +84,7 @@ func (h *emojiRepository) Approve(emoji *entity.Emoji) error {
 	return nil
 }
 
-func (h *emojiRepository) Disapprove(emoji *entity.Emoji) error {
+func (r *emojiRepository) Disapprove(emoji *entity.Emoji) error {
 	if emoji.IsAccepted {
 		return errors.EmojiAlready("emoji is already accepted")
 	}
@@ -94,40 +94,40 @@ func (h *emojiRepository) Disapprove(emoji *entity.Emoji) error {
 	return nil
 }
 
-func (h *emojiRepository) Abort(emoji *entity.Emoji) {
-	h.Remove(*emoji)
-	h.ResetState(emoji)
+func (r *emojiRepository) Abort(emoji *entity.Emoji) {
+	r.Remove(*emoji)
+	_ = r.ResetState(emoji)
 	emoji.IsFinish = true
 }
 
-func (h *emojiRepository) Remove(emoji entity.Emoji) {
+func (r *emojiRepository) Remove(emoji entity.Emoji) {
 	var newSlice []entity.Emoji
-	for _, v := range h.emojiProcessList {
+	for _, v := range r.emojiProcessList {
 		if v.ID != emoji.ID {
 			newSlice = append(newSlice, v)
 		}
 	}
-	h.emojiProcessList = newSlice
+	r.emojiProcessList = newSlice
 }
 
-func (h *emojiRepository) addEmoji(emoji entity.Emoji) {
-	h.emojiProcessList = append(h.emojiProcessList, emoji)
+func (r *emojiRepository) addEmoji(emoji entity.Emoji) {
+	r.emojiProcessList = append(r.emojiProcessList, emoji)
 }
 
-func (h *emojiRepository) Save(emoji *entity.Emoji) error {
+func (r *emojiRepository) Save(emoji *entity.Emoji) error {
 	jsonData, err := json.MarshalIndent(emoji, "", "  ")
 	if err != nil {
 		return errors.FileOperation("failed to marshal emoji data to JSON", err)
 	}
 
-	filePath := h.config.SavePath + emoji.ID + ".json"
+	filePath := r.config.SavePath + emoji.ID + ".json"
 	if err := os.WriteFile(filePath, jsonData, 0644); err != nil {
 		return errors.FileOperation("failed to save emoji data", err)
 	}
 	return nil
 }
 
-func (h *emojiRepository) ResetState(emoji *entity.Emoji) error {
+func (r *emojiRepository) ResetState(emoji *entity.Emoji) error {
 	emoji.IsSensitive = false
 	emoji.IsAccepted = false
 	emoji.IsRequested = false

@@ -44,8 +44,8 @@ func (h *tagHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *disc
 		emoji.Tag = ""
 	}
 	response.IsSuccess = true
-	s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+emoji.Tag+"` ]")
-	s.ChannelMessageSend(m.ChannelID, "# ----------\n")
+	_, _ = s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+emoji.Tag+"` ]")
+	_, _ = s.ChannelMessageSend(m.ChannelID, "# ----------\n")
 
 	return response, nil
 }

@@ -34,7 +34,7 @@ func (c *emojiRequestComponen) Execute(s *discordgo.Session, i *discordgo.Intera
 	channel, _ := s.Channel(i.ChannelID)
 	emoji, err := c.emojiRepository.GetEmoji(channel.Name[6:])
 	if err != nil {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Flags:   discordgo.MessageFlagsEphemeral,
@@ -44,14 +44,14 @@ func (c *emojiRequestComponen) Execute(s *discordgo.Session, i *discordgo.Intera
 	}
 
 	if emoji.IsRequested {
-		s.ChannelMessageSend(
+		_, _ = s.ChannelMessageSend(
 			channel.ID,
 			"既に申請していますよ！\n",
 		)
 		return
 	}
 
-	s.ChannelMessageSend(
+	_, _ = s.ChannelMessageSend(
 		channel.ID,
 		"## 申請をしました！\n"+
 			"申請結果については追ってDMでご連絡いたします。\n"+
@@ -59,7 +59,7 @@ func (c *emojiRequestComponen) Execute(s *discordgo.Session, i *discordgo.Intera
 			"この度は申請いただき大変ありがとうございました。\n",
 	)
 
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Flags:   discordgo.MessageFlagsEphemeral,
@@ -69,7 +69,7 @@ func (c *emojiRequestComponen) Execute(s *discordgo.Session, i *discordgo.Intera
 
 	emoji.IsRequested = true
 
-	c.discordRepo.SendDirectMessage(emoji.RequestUser, "# 申請内容 "+emoji.ID+"\n"+
+	_ = c.discordRepo.SendDirectMessage(emoji.RequestUser, "# 申請内容 "+emoji.ID+"\n"+
 		":: 申請日時: "+emoji.StartAt.Format(time.RFC1123)+"\n"+
 		"- 名前: **"+emoji.Name+"**\n"+
 		"- Category: "+emoji.Category+"\n"+
@@ -96,11 +96,14 @@ func (c *emojiRequestComponen) Execute(s *discordgo.Session, i *discordgo.Intera
 		AutoArchiveDuration: 60,
 		Invitable:           false,
 	})
+	if err != nil {
+		return
+	}
 
-	s.ChannelMessageSend(thread.ID, "# 申請\n")
-	s.ChannelMessageSend(thread.ID, ":: 申請者: **"+i.Member.User.Username+"**\n")
-	s.ChannelMessageSend(thread.ID, "# 詳細\n")
-	s.ChannelMessageSend(thread.ID,
+	_, _ = s.ChannelMessageSend(thread.ID, "# 申請\n")
+	_, _ = s.ChannelMessageSend(thread.ID, ":: 申請者: **"+i.Member.User.Username+"**\n")
+	_, _ = s.ChannelMessageSend(thread.ID, "# 詳細\n")
+	_, _ = s.ChannelMessageSend(thread.ID,
 		"- Name    : **"+emoji.Name+"**\n"+
 			"- Category: **"+emoji.Category+"**\n"+
 			"- Tag     : **"+emoji.Tag+"**\n"+
@@ -111,7 +114,7 @@ func (c *emojiRequestComponen) Execute(s *discordgo.Session, i *discordgo.Intera
 
 	file, err := os.Open(emoji.FilePath)
 	if err != nil {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Flags:   discordgo.MessageFlagsEphemeral,
@@ -120,11 +123,11 @@ func (c *emojiRequestComponen) Execute(s *discordgo.Session, i *discordgo.Intera
 		})
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	lastMessage, err := s.ChannelFileSend(thread.ID, emoji.FilePath, file)
 	if err != nil {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Flags:   discordgo.MessageFlagsEphemeral,
@@ -134,6 +137,6 @@ func (c *emojiRequestComponen) Execute(s *discordgo.Session, i *discordgo.Intera
 		return
 	}
 
-	s.MessageReactionAdd(thread.ID, lastMessage.ID, "🆗")
-	s.MessageReactionAdd(thread.ID, lastMessage.ID, "🆖")
+	_ = s.MessageReactionAdd(thread.ID, lastMessage.ID, "🆗")
+	_ = s.MessageReactionAdd(thread.ID, lastMessage.ID, "🆖")
 }

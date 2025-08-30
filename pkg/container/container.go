@@ -117,13 +117,13 @@ func (c *Container) registerCommands() {
 }
 
 func (c *Container) registerComponents() {
-	c.ComponentHandler.AddComponent(component.NewCreateEmojiChannelComponen(c.EmojiRequestHandler, c.EmojiRepository, c.DiscordRepository))
-	c.ComponentHandler.AddComponent(component.NewEmojiCancelRequestComponent(c.EmojiRepository, c.DiscordRepository))
-	c.ComponentHandler.AddComponent(component.NewEmojiRequestComponen(*c.Config, c.EmojiRepository, c.DiscordRepository))
-	c.ComponentHandler.AddComponent(component.NewEmojiRequestRetryComponen(c.EmojiRequestHandler, c.EmojiRepository, c.DiscordRepository))
-	c.ComponentHandler.AddComponent(component.NewInitComponent(*c.Config, c.DiscordRepository))
-	c.ComponentHandler.AddComponent(component.NewNsfwActiveComponent(c.EmojiRequestHandler, c.EmojiRepository, c.DiscordRepository))
-	c.ComponentHandler.AddComponent(component.NewNsfwInactiveComponent(c.EmojiRequestHandler, c.EmojiRepository, c.DiscordRepository))
+	_ = c.ComponentHandler.AddComponent(component.NewCreateEmojiChannelComponen(c.EmojiRequestHandler, c.EmojiRepository, c.DiscordRepository))
+	_ = c.ComponentHandler.AddComponent(component.NewEmojiCancelRequestComponent(c.EmojiRepository, c.DiscordRepository))
+	_ = c.ComponentHandler.AddComponent(component.NewEmojiRequestComponen(*c.Config, c.EmojiRepository, c.DiscordRepository))
+	_ = c.ComponentHandler.AddComponent(component.NewEmojiRequestRetryComponen(c.EmojiRequestHandler, c.EmojiRepository, c.DiscordRepository))
+	_ = c.ComponentHandler.AddComponent(component.NewInitComponent(*c.Config, c.DiscordRepository))
+	_ = c.ComponentHandler.AddComponent(component.NewNsfwActiveComponent(c.EmojiRequestHandler, c.EmojiRepository, c.DiscordRepository))
+	_ = c.ComponentHandler.AddComponent(component.NewNsfwInactiveComponent(c.EmojiRequestHandler, c.EmojiRepository, c.DiscordRepository))
 }
 
 func (c *Container) registerProcessors() {

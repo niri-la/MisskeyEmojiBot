@@ -29,14 +29,14 @@ func (c *emojiRequestRetryComponen) Execute(s *discordgo.Session, i *discordgo.I
 	channel, _ := s.Channel(i.ChannelID)
 	emoji, err := c.emojiRepository.GetEmoji(channel.Name[6:])
 	if err != nil {
-		s.ChannelMessageSend(
+		_, _ = s.ChannelMessageSend(
 			channel.ID,
 			"設定に失敗しました。管理者に問い合わせを行ってください。 #04a\n",
 		)
 	}
 
 	if emoji.IsRequested {
-		s.ChannelMessageSend(
+		_, _ = s.ChannelMessageSend(
 			channel.ID,
 			"既に絵文字は申請されています。新たな申請を作成してください。\n",
 		)
@@ -45,9 +45,9 @@ func (c *emojiRequestRetryComponen) Execute(s *discordgo.Session, i *discordgo.I
 
 	emoji.IsSensitive = false
 
-	c.discordRepo.DeleteChannel(emoji.FilePath)
+	_ = c.discordRepo.DeleteChannel(emoji.FilePath)
 
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Flags:   discordgo.MessageFlagsEphemeral,
@@ -56,7 +56,7 @@ func (c *emojiRequestRetryComponen) Execute(s *discordgo.Session, i *discordgo.I
 	})
 
 	// reset
-	c.emojiRepository.ResetState(emoji)
+	_ = c.emojiRepository.ResetState(emoji)
 	c.emojiRequestHandler.ResetState(emoji, s)
-	c.emojiRequestHandler.ProcessRequest(emoji, s, i.ChannelID)
+	_ = c.emojiRequestHandler.ProcessRequest(emoji, s, i.ChannelID)
 }

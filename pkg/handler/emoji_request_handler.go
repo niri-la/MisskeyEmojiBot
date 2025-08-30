@@ -79,7 +79,7 @@ func (h *emojiRequestHandler) Process(emoji *entity.Emoji, s *discordgo.Session,
 		}
 		if r.IsSuccess {
 			emoji.ResponseFlag = true
-			h.emojiRepository.Save(emoji)
+			_ = h.emojiRepository.Save(emoji)
 		}
 	} else {
 		r, err := processor.Response(emoji, s, m)
@@ -89,7 +89,7 @@ func (h *emojiRequestHandler) Process(emoji *entity.Emoji, s *discordgo.Session,
 		if r.IsSuccess {
 			emoji.NowStateIndex++
 			emoji.ResponseFlag = false
-			h.emojiRepository.Save(emoji)
+			_ = h.emojiRepository.Save(emoji)
 			return h.ProcessRequest(emoji, s, m.ChannelID)
 		}
 	}
@@ -115,7 +115,7 @@ func (h *emojiRequestHandler) ProcessRequest(emoji *entity.Emoji, s *discordgo.S
 	}
 	if r.IsSuccess {
 		emoji.ResponseFlag = true
-		h.emojiRepository.Save(emoji)
+		_ = h.emojiRepository.Save(emoji)
 	}
 
 	return nil

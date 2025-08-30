@@ -111,7 +111,7 @@ func (r *emojiGormRepository) Disapprove(emoji *entity.Emoji) error {
 
 func (r *emojiGormRepository) Abort(emoji *entity.Emoji) {
 	r.Remove(*emoji)
-	r.ResetState(emoji)
+	_ = r.ResetState(emoji)
 	emoji.IsFinish = true
 	r.db.Save(emoji)
 }

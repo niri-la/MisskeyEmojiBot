@@ -30,11 +30,11 @@ func (c *initCommand) GetCommand() *discordgo.ApplicationCommand {
 
 func (c *initCommand) Execute(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if !c.discordRepo.HasRole(c.config.GuildID, *i.Member.User, c.config.ModeratorID) {
-		c.discordRepo.ReturnFailedMessage(i, "No permission.")
+		_ = c.discordRepo.ReturnFailedMessage(i, "No permission.")
 		return
 	}
 
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "こんにちは！絵文字申請の初期化を行います。\n" +
