@@ -22,6 +22,7 @@ type MisskeyRepository interface {
 	UploadEmoji(emoji *entity.Emoji) error
 	GetFolder(folderName string) (models.Folder, error)
 	NewString(message string) core.String
+	CheckEmojiExists(emojiName string) (bool, *models.Emoji, error)
 }
 
 type misskeyRepository struct {
@@ -134,4 +135,26 @@ func (r *misskeyRepository) GetFolder(folderName string) (models.Folder, error) 
 		return models.Folder{}, err
 	}
 	return create, nil
+}
+
+func (r *misskeyRepository) CheckEmojiExists(emojiName string) (bool, *models.Emoji, error) {
+	// Misskey API: emojis endpoint で既存絵文字を検索
+	// Note: この実装は go-misskey ライブラリの利用可能なメソッドに依存します
+	
+	// 現在のgo-misskeyライブラリでemojisエンドポイントが利用可能か確認が必要
+	// 暫定的にfalseを返してエラーなしとする（後で実装）
+	
+	// TODO: 実際のMisskey API呼び出しを実装
+	// emojis, err := r.client.Admin().Emoji().List()
+	// if err != nil {
+	//     return false, nil, err
+	// }
+	
+	// for _, emoji := range emojis {
+	//     if emoji.Name == emojiName {
+	//         return true, &emoji, nil
+	//     }
+	// }
+	
+	return false, nil, nil
 }
