@@ -1,0 +1,22 @@
+{
+  "id": "23e88aeb-e35a-4e91-b46b-07083ca613a3",
+  "channelID": "1410685693872705718",
+  "requestUser": "703609122733555732",
+  "name": "nemunemu",
+  "category": "Moji",
+  "tag": "ねむねむ",
+  "license": "",
+  "other": "",
+  "filepath": "./Emoji/23e88aeb-e35a-4e91-b46b-07083ca613a3.png",
+  "isSensitive": false,
+  "isRequested": true,
+  "isAccepted": false,
+  "isFinish": false,
+  "approveCount": 2,
+  "disapproveCount": 1,
+  "responseState": true,
+  "nowStateIndex": 7,
+  "moderationMessageID": "1410686035662213193",
+  "userThreadID": "",
+  "startAt": "2025-08-29T03:01:18.689946696+09:00"
+}

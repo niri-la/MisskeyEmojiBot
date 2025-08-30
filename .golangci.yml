@@ -1,0 +1,40 @@
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  enable:
+    - govet
+    - staticcheck
+    - gosimple
+    - errcheck
+    - ineffassign
+    - typecheck
+    - unused
+    - revive
+    - gocritic
+    - gofmt
+    - goimports
+    - misspell
+    - gci
+
+linters-settings:
+  gocritic:
+    disabled-checks:
+      - hugeParam
+  goimports:
+    local-prefixes: MisskeyEmojiBot
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(MisskeyEmojiBot)
+  misspell:
+    locale: US
+
+issues:
+  exclude-use-default: false
+  exclude-dirs:
+    - vendor
+  max-issues-per-linter: 0
+  max-same-issues: 0
