@@ -1,7 +1,6 @@
 package processor
 
 import (
-	"bytes"
 	"os"
 	"path/filepath"
 
@@ -10,21 +9,15 @@ import (
 	"MisskeyEmojiBot/pkg/config"
 	"MisskeyEmojiBot/pkg/entity"
 	"MisskeyEmojiBot/pkg/handler"
-	"MisskeyEmojiBot/pkg/repository"
 	"MisskeyEmojiBot/pkg/utility"
 )
 
 type uploadHandler struct {
 	config config.Config
-	s3Repo repository.S3Repository
 }
 
 func NewUploadHandler(cfg config.Config) handler.EmojiProcessHandler {
-	var s3Repo repository.S3Repository
-	if cfg.UseS3 {
-		s3Repo, _ = repository.NewS3Repository(&cfg)
-	}
-	return &uploadHandler{config: cfg, s3Repo: s3Repo}
+	return &uploadHandler{config: cfg}
 }
 
 func (h *uploadHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID string) (entity.Response, error) {
@@ -49,62 +42,27 @@ func (h *uploadHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *d
 				"対応ファイルは`.png`,`.jpg`,`.jpeg`,`.gif`です。")
 			return response, nil
 		}
-		if h.config.UseS3 && h.s3Repo != nil {
-			fileData, err := utility.EmojiDownloadToBytes(attachment.URL)
-			if err != nil {
-				_, _ = s.ChannelMessageSend(m.ChannelID, ": Error! \n"+
-					"申請中にエラーが発生しました。URLを確認して再アップロードを行うか、管理者へ問い合わせを行ってください。#01a")
-				return response, nil
-			}
+		emoji.FilePath = filepath.Join(h.config.SavePath, emoji.ID+ext)
+		err := utility.EmojiDownload(attachment.URL, emoji.FilePath)
+		if err != nil {
+			_, _ = s.ChannelMessageSend(m.ChannelID, ": Error! \n"+
+				"申請中にエラーが発生しました。URLを確認して再アップロードを行うか、管理者へ問い合わせを行ってください。#01a")
+			return response, nil
+		}
 
-			key := "emojis/" + emoji.ID + ext
-			contentType := repository.GetContentTypeFromExtension(attachment.Filename)
-			fileURL, err := h.s3Repo.UploadFile(key, fileData, contentType)
-			if err != nil {
-				_, _ = s.ChannelMessageSend(m.ChannelID, ": Error! \n"+
-					"申請中にエラーが発生しました。S3へのアップロードに失敗しました。#01sa")
-				return response, nil
-			}
+		file, err := os.Open(emoji.FilePath)
+		if err != nil {
+			_, _ = s.ChannelMessageSend(m.ChannelID, ": Error! \n"+
+				"申請中にエラーが発生しました。管理者へ問い合わせを行ってください。#01b")
+			return response, nil
+		}
+		defer func() { _ = file.Close() }()
 
-			emoji.FilePath = fileURL
-
-			_, err = s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
-				Content: "アップロード完了: " + fileURL,
-				Files: []*discordgo.File{
-					{
-						Name:   attachment.Filename,
-						Reader: bytes.NewReader(fileData),
-					},
-				},
-			})
-			if err != nil {
-				_, _ = s.ChannelMessageSend(m.ChannelID, ": Error! \n"+
-					"申請中にエラーが発生しました。管理者へ問い合わせを行ってください。#01sb")
-				return response, nil
-			}
-		} else {
-			emoji.FilePath = filepath.Join(h.config.SavePath, emoji.ID+ext)
-			err := utility.EmojiDownload(attachment.URL, emoji.FilePath)
-			if err != nil {
-				_, _ = s.ChannelMessageSend(m.ChannelID, ": Error! \n"+
-					"申請中にエラーが発生しました。URLを確認して再アップロードを行うか、管理者へ問い合わせを行ってください。#01a")
-				return response, nil
-			}
-
-			file, err := os.Open(emoji.FilePath)
-			if err != nil {
-				_, _ = s.ChannelMessageSend(m.ChannelID, ": Error! \n"+
-					"申請中にエラーが発生しました。管理者へ問い合わせを行ってください。#01b")
-				return response, nil
-			}
-			defer func() { _ = file.Close() }()
-
-			_, err = s.ChannelFileSend(m.ChannelID, emoji.FilePath, file)
-			if err != nil {
-				_, _ = s.ChannelMessageSend(m.ChannelID, ": Error! \n"+
-					"申請中にエラーが発生しました。管理者へ問い合わせを行ってください。#01d")
-				return response, nil
-			}
+		_, err = s.ChannelFileSend(m.ChannelID, emoji.FilePath, file)
+		if err != nil {
+			_, _ = s.ChannelMessageSend(m.ChannelID, ": Error! \n"+
+				"申請中にエラーが発生しました。管理者へ問い合わせを行ってください。#01d")
+			return response, nil
 		}
 
 		response.IsSuccess = true

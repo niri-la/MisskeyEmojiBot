@@ -35,18 +35,3 @@ func EmojiDownload(url string, filePath string) error {
 
 	return nil
 }
-
-func EmojiDownloadToBytes(url string) ([]byte, error) {
-	response, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = response.Body.Close() }()
-
-	data, err := io.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
-}
