@@ -1,11 +1,12 @@
 package processor
 
 import (
-	"MisskeyEmojiBot/pkg/entity"
-	"MisskeyEmojiBot/pkg/handler"
 	"strconv"
 
 	"github.com/bwmarrin/discordgo"
+
+	"MisskeyEmojiBot/pkg/entity"
+	"MisskeyEmojiBot/pkg/handler"
 )
 
 type confirmHandler struct {

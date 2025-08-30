@@ -1,10 +1,10 @@
 package processor
 
 import (
+	"github.com/bwmarrin/discordgo"
+
 	"MisskeyEmojiBot/pkg/entity"
 	"MisskeyEmojiBot/pkg/handler"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 type otherHandler struct {

@@ -7,14 +7,14 @@ import (
 type ErrorCode string
 
 const (
-	ErrCodeConfig          ErrorCode = "CONFIG_ERROR"
-	ErrCodeDiscord         ErrorCode = "DISCORD_ERROR"
-	ErrCodeMisskey         ErrorCode = "MISSKEY_ERROR"
-	ErrCodeFileOperation   ErrorCode = "FILE_ERROR"
-	ErrCodeEmojiNotFound   ErrorCode = "EMOJI_NOT_FOUND"
-	ErrCodeEmojiAlready    ErrorCode = "EMOJI_ALREADY_PROCESSED"
-	ErrCodeValidation      ErrorCode = "VALIDATION_ERROR"
-	ErrCodeUpload          ErrorCode = "UPLOAD_ERROR"
+	ErrCodeConfig        ErrorCode = "CONFIG_ERROR"
+	ErrCodeDiscord       ErrorCode = "DISCORD_ERROR"
+	ErrCodeMisskey       ErrorCode = "MISSKEY_ERROR"
+	ErrCodeFileOperation ErrorCode = "FILE_ERROR"
+	ErrCodeEmojiNotFound ErrorCode = "EMOJI_NOT_FOUND"
+	ErrCodeEmojiAlready  ErrorCode = "EMOJI_ALREADY_PROCESSED"
+	ErrCodeValidation    ErrorCode = "VALIDATION_ERROR"
+	ErrCodeUpload        ErrorCode = "UPLOAD_ERROR"
 )
 
 type AppError struct {

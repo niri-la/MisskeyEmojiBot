@@ -1,10 +1,10 @@
 package component
 
 import (
+	"github.com/bwmarrin/discordgo"
+
 	"MisskeyEmojiBot/pkg/handler"
 	"MisskeyEmojiBot/pkg/repository"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 type EmojiRequestRetryComponen interface {

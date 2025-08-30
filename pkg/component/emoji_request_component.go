@@ -1,14 +1,15 @@
 package component
 
 import (
-	"MisskeyEmojiBot/pkg/config"
-	"MisskeyEmojiBot/pkg/handler"
-	"MisskeyEmojiBot/pkg/repository"
 	"os"
 	"strconv"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+
+	"MisskeyEmojiBot/pkg/config"
+	"MisskeyEmojiBot/pkg/handler"
+	"MisskeyEmojiBot/pkg/repository"
 )
 
 type EmojiRequestComponen interface {

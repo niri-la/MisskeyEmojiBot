@@ -1,12 +1,13 @@
 package processor
 
 import (
-	"MisskeyEmojiBot/pkg/entity"
-	"MisskeyEmojiBot/pkg/handler"
 	"regexp"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+
+	"MisskeyEmojiBot/pkg/entity"
+	"MisskeyEmojiBot/pkg/handler"
 )
 
 type nameSettingHandler struct {

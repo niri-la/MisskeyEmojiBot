@@ -1,13 +1,14 @@
 package handler
 
 import (
-	"MisskeyEmojiBot/pkg/entity"
 	_ "embed"
 	"fmt"
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 	"gopkg.in/yaml.v2"
+
+	"MisskeyEmojiBot/pkg/entity"
 )
 
 const (

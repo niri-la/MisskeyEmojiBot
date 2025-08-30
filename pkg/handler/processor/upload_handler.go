@@ -1,14 +1,15 @@
 package processor
 
 import (
-	"MisskeyEmojiBot/pkg/config"
-	"MisskeyEmojiBot/pkg/entity"
-	"MisskeyEmojiBot/pkg/handler"
-	"MisskeyEmojiBot/pkg/utility"
 	"os"
 	"path/filepath"
 
 	"github.com/bwmarrin/discordgo"
+
+	"MisskeyEmojiBot/pkg/config"
+	"MisskeyEmojiBot/pkg/entity"
+	"MisskeyEmojiBot/pkg/handler"
+	"MisskeyEmojiBot/pkg/utility"
 )
 
 type uploadHandler struct {

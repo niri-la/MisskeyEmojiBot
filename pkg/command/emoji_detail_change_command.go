@@ -1,12 +1,13 @@
 package command
 
 import (
-	"MisskeyEmojiBot/pkg/config"
-	"MisskeyEmojiBot/pkg/handler"
-	"MisskeyEmojiBot/pkg/repository"
 	"strconv"
 
 	"github.com/bwmarrin/discordgo"
+
+	"MisskeyEmojiBot/pkg/config"
+	"MisskeyEmojiBot/pkg/handler"
+	"MisskeyEmojiBot/pkg/repository"
 )
 
 type EmojiDetailChangeCommand interface {

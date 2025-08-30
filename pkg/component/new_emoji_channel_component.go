@@ -1,11 +1,12 @@
 package component
 
 import (
-	"MisskeyEmojiBot/pkg/handler"
-	"MisskeyEmojiBot/pkg/repository"
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
+
+	"MisskeyEmojiBot/pkg/handler"
+	"MisskeyEmojiBot/pkg/repository"
 )
 
 type CreateEmojiChannelComponen interface {

@@ -1,12 +1,13 @@
 package job
 
 import (
-	"MisskeyEmojiBot/pkg/repository"
 	"strings"
 	"time"
 
 	"github.com/yitsushi/go-misskey/models"
 	"github.com/yitsushi/go-misskey/services/notes"
+
+	"MisskeyEmojiBot/pkg/repository"
 )
 
 type emojiUpdateInfoJob struct {

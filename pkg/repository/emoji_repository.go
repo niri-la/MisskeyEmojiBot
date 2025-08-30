@@ -1,14 +1,15 @@
 package repository
 
 import (
-	"MisskeyEmojiBot/pkg/config"
-	"MisskeyEmojiBot/pkg/entity"
-	"MisskeyEmojiBot/pkg/errors"
 	"encoding/json"
 	"os"
 	"time"
 
 	"github.com/google/uuid"
+
+	"MisskeyEmojiBot/pkg/config"
+	"MisskeyEmojiBot/pkg/entity"
+	"MisskeyEmojiBot/pkg/errors"
 )
 
 type EmojiRepository interface {
@@ -118,7 +119,7 @@ func (h *emojiRepository) Save(emoji *entity.Emoji) error {
 	if err != nil {
 		return errors.FileOperation("failed to marshal emoji data to JSON", err)
 	}
-	
+
 	filePath := h.config.SavePath + emoji.ID + ".json"
 	if err := os.WriteFile(filePath, jsonData, 0644); err != nil {
 		return errors.FileOperation("failed to save emoji data", err)

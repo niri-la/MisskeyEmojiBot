@@ -1,12 +1,13 @@
 package config
 
 import (
-	"MisskeyEmojiBot/pkg/errors"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/joho/godotenv"
+
+	"MisskeyEmojiBot/pkg/errors"
 )
 
 type Config struct {

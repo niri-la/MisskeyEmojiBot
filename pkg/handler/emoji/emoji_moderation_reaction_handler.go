@@ -1,12 +1,13 @@
 package emoji
 
 import (
-	"MisskeyEmojiBot/pkg/config"
-	"MisskeyEmojiBot/pkg/entity"
-	"MisskeyEmojiBot/pkg/repository"
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
+
+	"MisskeyEmojiBot/pkg/config"
+	"MisskeyEmojiBot/pkg/entity"
+	"MisskeyEmojiBot/pkg/repository"
 )
 
 type EmojiModerationReactionHandler interface {

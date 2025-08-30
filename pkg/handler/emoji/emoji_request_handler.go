@@ -1,9 +1,9 @@
 package emoji
 
 import (
-	"MisskeyEmojiBot/pkg/entity"
-
 	"github.com/bwmarrin/discordgo"
+
+	"MisskeyEmojiBot/pkg/entity"
 )
 
 type EmojiProcessHandler interface {
