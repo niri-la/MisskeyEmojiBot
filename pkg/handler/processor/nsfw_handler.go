@@ -1,10 +1,10 @@
 package processor
 
 import (
+	"github.com/bwmarrin/discordgo"
+
 	"MisskeyEmojiBot/pkg/entity"
 	"MisskeyEmojiBot/pkg/handler"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 type nsfwHandler struct {
@@ -18,7 +18,7 @@ func (h *nsfwHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID str
 	response := entity.Response{
 		IsSuccess: true,
 	}
-	s.ChannelMessageSendComplex(cID,
+	_, _ = s.ChannelMessageSendComplex(cID,
 		&discordgo.MessageSend{
 			Content: "## 絵文字はセンシティブですか？\n",
 			Components: []discordgo.MessageComponent{

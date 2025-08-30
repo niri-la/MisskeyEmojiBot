@@ -1,12 +1,13 @@
 package emoji
 
 import (
-	"MisskeyEmojiBot/pkg/config"
-	"MisskeyEmojiBot/pkg/entity"
-	"MisskeyEmojiBot/pkg/repository"
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
+
+	"MisskeyEmojiBot/pkg/config"
+	"MisskeyEmojiBot/pkg/entity"
+	"MisskeyEmojiBot/pkg/repository"
 )
 
 type EmojiModerationReactionHandler interface {
@@ -78,14 +79,14 @@ func (h *emojiModerationReactionHandler) HandleEmojiModerationReaction(s *discor
 
 	emoji.ApproveCount = apCount
 	emoji.DisapproveCount = dsCount
-	h.emojiRepository.Save(emoji)
+	_ = h.emojiRepository.Save(emoji)
 
 	if emoji.DisapproveCount-1 >= roleCount || (h.config.IsDebug && emoji.DisapproveCount-1 >= 1) {
 		err := h.emojiHandler.Disapprove(emoji)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 		}
-		s.ChannelMessageSend(m.ChannelID, "## 申請は却下されました")
+		_, _ = s.ChannelMessageSend(m.ChannelID, "## 申請は却下されました")
 		err = h.discordRepository.CloseThread(m.ChannelID, emoji.ModerationMessageID)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
@@ -97,18 +98,18 @@ func (h *emojiModerationReactionHandler) HandleEmojiModerationReaction(s *discor
 		err := h.emojiHandler.Approve(emoji)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
-			s.ChannelMessageSend(m.ChannelID, "絵文字アップロードに失敗しました。"+err.Error()+
+			_, _ = s.ChannelMessageSend(m.ChannelID, "絵文字アップロードに失敗しました。"+err.Error()+
 				"\n\n再度モデレーション承認を行うことで、アップロードをリトライできます。")
 			// アップロード失敗時は承認プロセスをやり直せるように状態をリセット
 			emoji.ApproveCount = 0
 			emoji.DisapproveCount = 0
 			emoji.IsAccepted = false
 			emoji.IsFinish = false
-			h.emojiRepository.Save(emoji)
+			_ = h.emojiRepository.Save(emoji)
 			return
 		}
-		s.ChannelMessageSend(m.ChannelID, "## 絵文字はアップロードされました")
-		h.discordRepository.CloseThread(m.ChannelID, emoji.ModerationMessageID)
+		_, _ = s.ChannelMessageSend(m.ChannelID, "## 絵文字はアップロードされました")
+		err = h.discordRepository.CloseThread(m.ChannelID, emoji.ModerationMessageID)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 		}

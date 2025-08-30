@@ -1,10 +1,10 @@
 package processor
 
 import (
+	"github.com/bwmarrin/discordgo"
+
 	"MisskeyEmojiBot/pkg/entity"
 	"MisskeyEmojiBot/pkg/handler"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 type categoryHandler struct {
@@ -40,8 +40,8 @@ func (h *categoryHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m 
 	}
 	response.IsSuccess = true
 
-	s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+emoji.Category+"` ]")
-	s.ChannelMessageSend(m.ChannelID, "# ----------\n")
+	_, _ = s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+emoji.Category+"` ]")
+	_, _ = s.ChannelMessageSend(m.ChannelID, "# ----------\n")
 
 	return response, nil
 }

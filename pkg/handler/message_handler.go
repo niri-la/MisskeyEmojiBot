@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"MisskeyEmojiBot/pkg/entity"
-	_ "embed"
 	"fmt"
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 	"gopkg.in/yaml.v2"
+
+	"MisskeyEmojiBot/pkg/entity"
 )
 
 const (
@@ -21,8 +21,6 @@ var languages = []language.Tag{
 	language.English,
 }
 
-// //go:embed message/ja-jp.yaml
-// var messageJp string
 var messageJp string
 
 type MessageHandler interface {
@@ -59,7 +57,7 @@ func processMap(m map[interface{}]interface{}, parentKey string, result *[]entit
 			processMap(value, key, result)
 		default:
 			valueStr := fmt.Sprintf("%v", v)
-			message.SetString(language.Japanese, key, valueStr)
+			message.SetString(language.Japanese, key, valueStr) //nolint:errcheck
 			*result = append(*result, entity.MessageKeyValue{Key: key, Value: valueStr})
 		}
 	}

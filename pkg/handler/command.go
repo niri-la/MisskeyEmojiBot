@@ -1,15 +1,14 @@
 package handler
 
 import (
-	"MisskeyEmojiBot/pkg/config"
-	"MisskeyEmojiBot/pkg/repository"
 	"fmt"
 	"os"
 
 	"github.com/bwmarrin/discordgo"
-)
 
-var ()
+	"MisskeyEmojiBot/pkg/config"
+	"MisskeyEmojiBot/pkg/repository"
+)
 
 type CommandInterface interface {
 	GetCommand() *discordgo.ApplicationCommand

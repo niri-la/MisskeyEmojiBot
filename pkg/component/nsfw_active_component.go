@@ -1,10 +1,10 @@
 package component
 
 import (
+	"github.com/bwmarrin/discordgo"
+
 	"MisskeyEmojiBot/pkg/handler"
 	"MisskeyEmojiBot/pkg/repository"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 type NsfwActiveComponen interface {
@@ -31,7 +31,7 @@ func (c *nsfwActiveComponen) Execute(s *discordgo.Session, i *discordgo.Interact
 	channel, _ := s.Channel(i.ChannelID)
 	emoji, err := c.emojiRepository.GetEmoji(channel.Name[6:])
 	if err != nil {
-		s.ChannelMessageSend(
+		_, _ = s.ChannelMessageSend(
 			channel.ID,
 			"設定に失敗しました。管理者に問い合わせを行ってください。 #03a\n",
 		)
@@ -40,7 +40,7 @@ func (c *nsfwActiveComponen) Execute(s *discordgo.Session, i *discordgo.Interact
 	}
 
 	if emoji.IsRequested {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Flags:   discordgo.MessageFlagsEphemeral,
@@ -50,7 +50,7 @@ func (c *nsfwActiveComponen) Execute(s *discordgo.Session, i *discordgo.Interact
 		return
 	}
 
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Flags:   discordgo.MessageFlagsEphemeral,
@@ -60,5 +60,5 @@ func (c *nsfwActiveComponen) Execute(s *discordgo.Session, i *discordgo.Interact
 	emoji.IsSensitive = true
 	emoji.NowStateIndex++
 	emoji.ResponseFlag = false
-	c.emojiRequestHandler.ProcessRequest(emoji, s, i.ChannelID)
+	_ = c.emojiRequestHandler.ProcessRequest(emoji, s, i.ChannelID)
 }

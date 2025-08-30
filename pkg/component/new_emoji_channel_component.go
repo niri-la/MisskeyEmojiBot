@@ -1,11 +1,12 @@
 package component
 
 import (
-	"MisskeyEmojiBot/pkg/handler"
-	"MisskeyEmojiBot/pkg/repository"
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
+
+	"MisskeyEmojiBot/pkg/handler"
+	"MisskeyEmojiBot/pkg/repository"
 )
 
 type CreateEmojiChannelComponen interface {
@@ -38,12 +39,12 @@ func (c *createEmojiChannelComponen) Execute(s *discordgo.Session, i *discordgo.
 	})
 
 	if err != nil {
-		c.discordRepo.ReturnFailedMessage(i, fmt.Sprintf("Could not create emoji channel: %v", err))
+		_ = c.discordRepo.ReturnFailedMessage(i, fmt.Sprintf("Could not create emoji channel: %v", err))
 		c.emojiReposiotry.Abort(emoji)
 		return
 	}
 
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Flags:   discordgo.MessageFlagsEphemeral,
@@ -53,18 +54,18 @@ func (c *createEmojiChannelComponen) Execute(s *discordgo.Session, i *discordgo.
 
 	user, err := s.User(emoji.RequestUser)
 	if err != nil {
-		c.discordRepo.ReturnFailedMessage(i, fmt.Sprintf("Could not find user: %v", err))
+		_ = c.discordRepo.ReturnFailedMessage(i, fmt.Sprintf("Could not find user: %v", err))
 		return
 	}
 
-	s.ChannelMessageSend(
+	_, _ = s.ChannelMessageSend(
 		channel.ID,
 		"# 絵文字申請チャンネルへようこそ！\n"+user.Mention()+"\n"+
 			" ここでは絵文字に関する各種登録を行います。表示されるメッセージに従って入力を行ってください！\n"+
 			" 申請は絵文字Botが担当させていただきます。Botが一度非アクティブになると設定は初期化されますのでご注意ください！\n",
 	)
 
-	s.ChannelMessageSendComplex(channel.ID,
+	_, _ = s.ChannelMessageSendComplex(channel.ID,
 		&discordgo.MessageSend{
 			Content: "## 申請のキャンセル\n申請をキャンセルする場合は以下のボタンを押してください。\n申請後はキャンセルできませんのでご注意ください。\n",
 			Components: []discordgo.MessageComponent{
@@ -87,5 +88,5 @@ func (c *createEmojiChannelComponen) Execute(s *discordgo.Session, i *discordgo.
 	emoji, _ = c.emojiReposiotry.GetEmoji(emoji.ID)
 	emoji.ChannelID = channel.ID
 	c.emojiRequestHandler.ResetState(emoji, s)
-	c.emojiRequestHandler.ProcessRequest(emoji, s, channel.ID)
+	_ = c.emojiRequestHandler.ProcessRequest(emoji, s, channel.ID)
 }

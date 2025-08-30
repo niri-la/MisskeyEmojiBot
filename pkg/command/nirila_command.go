@@ -1,10 +1,10 @@
 package command
 
 import (
+	"github.com/bwmarrin/discordgo"
+
 	"MisskeyEmojiBot/pkg/handler"
 	"MisskeyEmojiBot/pkg/repository"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 type NirilaCommand interface {
@@ -27,7 +27,7 @@ func (c *nirilaCommand) GetCommand() *discordgo.ApplicationCommand {
 }
 
 func (c *nirilaCommand) Execute(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Flags: discordgo.MessageFlagsEphemeral,

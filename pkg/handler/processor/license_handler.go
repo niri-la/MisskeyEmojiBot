@@ -1,10 +1,10 @@
 package processor
 
 import (
+	"github.com/bwmarrin/discordgo"
+
 	"MisskeyEmojiBot/pkg/entity"
 	"MisskeyEmojiBot/pkg/handler"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 type licenseHandler struct {
@@ -39,8 +39,8 @@ func (h *licenseHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *
 	}
 	emoji.License = input
 
-	s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+input+"` ]")
-	s.ChannelMessageSend(m.ChannelID, "# ----------\n")
+	_, _ = s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+input+"` ]")
+	_, _ = s.ChannelMessageSend(m.ChannelID, "# ----------\n")
 
 	response.IsSuccess = true
 

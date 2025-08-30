@@ -41,8 +41,8 @@ func (h *emojiHandler) Approve(emoji *entity.Emoji) error {
 	if err != nil {
 		return err
 	}
-	h.discordRepo.SendDirectMessage(emoji.RequestUser, "申請された絵文字は登録されました。"+"\n"+emoji.Name)
-	h.discordRepo.DeleteChannel(emoji.ChannelID)
+	_ = h.discordRepo.SendDirectMessage(emoji.RequestUser, "申請された絵文字は登録されました。"+"\n"+emoji.Name)
+	_ = h.discordRepo.DeleteChannel(emoji.ChannelID)
 	return nil
 }
 
@@ -52,8 +52,8 @@ func (h *emojiHandler) Disapprove(emoji *entity.Emoji) error {
 		return err
 	}
 
-	h.discordRepo.SendDirectMessage(emoji.RequestUser, "申請された絵文字は却下されました。"+"\n"+emoji.Name)
-	h.discordRepo.DeleteChannel(emoji.ChannelID)
+	_ = h.discordRepo.SendDirectMessage(emoji.RequestUser, "申請された絵文字は却下されました。"+"\n"+emoji.Name)
+	_ = h.discordRepo.DeleteChannel(emoji.ChannelID)
 	return nil
 }
 

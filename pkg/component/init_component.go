@@ -1,11 +1,11 @@
 package component
 
 import (
+	"github.com/bwmarrin/discordgo"
+
 	"MisskeyEmojiBot/pkg/config"
 	"MisskeyEmojiBot/pkg/handler"
 	"MisskeyEmojiBot/pkg/repository"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 type InitComponen interface {
@@ -29,7 +29,7 @@ func (c *initComponen) GetCommand() *discordgo.ApplicationCommand {
 func (c *initComponen) Execute(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	channelID := i.MessageComponentData().Values[0]
 
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Flags: discordgo.MessageFlagsEphemeral,
@@ -40,7 +40,7 @@ func (c *initComponen) Execute(s *discordgo.Session, i *discordgo.InteractionCre
 
 	println("init component")
 
-	s.ChannelMessageSendComplex(channelID,
+	_, _ = s.ChannelMessageSendComplex(channelID,
 		&discordgo.MessageSend{
 			Content: "こんにちは！絵文字申請チャンネルへようこそ！\n",
 			Components: []discordgo.MessageComponent{
@@ -83,25 +83,23 @@ func (c *initComponen) Execute(s *discordgo.Session, i *discordgo.InteractionCre
 	parent, err := s.Channel(i.ChannelID)
 
 	if err != nil {
-		c.discordRepo.ReturnFailedMessage(i, "Could not retrieve channel")
+		_ = c.discordRepo.ReturnFailedMessage(i, "Could not retrieve channel")
 		return
 	}
 
-	channel, err := c.discordRepo.FindChannelByName(i.GuildID, c.config.ModerationChannelName)
-
-	if err != nil {
-		channel, err = s.GuildChannelCreateComplex(i.GuildID, discordgo.GuildChannelCreateData{
+	if _, err := c.discordRepo.FindChannelByName(i.GuildID, c.config.ModerationChannelName); err != nil {
+		channel, err := s.GuildChannelCreateComplex(i.GuildID, discordgo.GuildChannelCreateData{
 			Type:                 discordgo.ChannelTypeGuildText,
 			Name:                 c.config.ModerationChannelName,
 			ParentID:             parent.ParentID,
 			PermissionOverwrites: overwrites,
 		})
 		if err != nil {
-			c.discordRepo.ReturnFailedMessage(i, "Could not create channel")
+			_ = c.discordRepo.ReturnFailedMessage(i, "Could not create channel")
 			return
 		}
 
-		s.ChannelMessageSend(
+		_, _ = s.ChannelMessageSend(
 			channel.ID,
 			": モデレーション用チャンネルです。\nここに各種申請のスレッドが生成されます。",
 		)

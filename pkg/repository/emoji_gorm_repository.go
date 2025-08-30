@@ -1,13 +1,14 @@
 package repository
 
 import (
+	"time"
+
+	"github.com/google/uuid"
+
 	"MisskeyEmojiBot/pkg/config"
 	"MisskeyEmojiBot/pkg/database"
 	"MisskeyEmojiBot/pkg/entity"
 	"MisskeyEmojiBot/pkg/errors"
-	"time"
-
-	"github.com/google/uuid"
 )
 
 type emojiGormRepository struct {
@@ -110,7 +111,7 @@ func (r *emojiGormRepository) Disapprove(emoji *entity.Emoji) error {
 
 func (r *emojiGormRepository) Abort(emoji *entity.Emoji) {
 	r.Remove(*emoji)
-	r.ResetState(emoji)
+	_ = r.ResetState(emoji)
 	emoji.IsFinish = true
 	r.db.Save(emoji)
 }

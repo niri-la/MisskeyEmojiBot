@@ -1,12 +1,13 @@
 package processor
 
 import (
-	"MisskeyEmojiBot/pkg/entity"
-	"MisskeyEmojiBot/pkg/handler"
 	"regexp"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+
+	"MisskeyEmojiBot/pkg/entity"
+	"MisskeyEmojiBot/pkg/handler"
 )
 
 type nameSettingHandler struct {
@@ -53,8 +54,8 @@ func (h *nameSettingHandler) Response(emoji *entity.Emoji, s *discordgo.Session,
 	input = reg.ReplaceAllStringFunc(strings.ToLower(input), func(s string) string {
 		return "_"
 	})
-	s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+input+"` ]")
-	s.ChannelMessageSend(m.ChannelID, "# ----------\n")
+	_, _ = s.ChannelMessageSend(m.ChannelID, ":: 入力されたメッセージ\n [ `"+input+"` ]")
+	_, _ = s.ChannelMessageSend(m.ChannelID, "# ----------\n")
 	emoji.Name = input
 	response.IsSuccess = true
 	return response, nil

@@ -1,12 +1,13 @@
 package main
 
 import (
+	"log"
+	"os"
+
 	"MisskeyEmojiBot/pkg/bot"
 	"MisskeyEmojiBot/pkg/config"
 	"MisskeyEmojiBot/pkg/container"
 	"MisskeyEmojiBot/pkg/errors"
-	"log"
-	"os"
 )
 
 func main() {

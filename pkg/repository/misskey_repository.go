@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"MisskeyEmojiBot/pkg/entity"
 	"io"
 	"os"
 	"strings"
@@ -14,6 +13,8 @@ import (
 	"github.com/yitsushi/go-misskey/services/drive/files"
 	"github.com/yitsushi/go-misskey/services/drive/folders"
 	"github.com/yitsushi/go-misskey/services/notes"
+
+	"MisskeyEmojiBot/pkg/entity"
 )
 
 type MisskeyRepository interface {
@@ -48,7 +49,7 @@ func (r *misskeyRepository) UploadEmoji(userEmoji *entity.Emoji) error {
 		return err
 	}
 
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	fileBytes, err := io.ReadAll(file)
 

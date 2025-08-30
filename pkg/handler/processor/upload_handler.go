@@ -1,14 +1,15 @@
 package processor
 
 import (
-	"MisskeyEmojiBot/pkg/config"
-	"MisskeyEmojiBot/pkg/entity"
-	"MisskeyEmojiBot/pkg/handler"
-	"MisskeyEmojiBot/pkg/utility"
 	"os"
 	"path/filepath"
 
 	"github.com/bwmarrin/discordgo"
+
+	"MisskeyEmojiBot/pkg/config"
+	"MisskeyEmojiBot/pkg/entity"
+	"MisskeyEmojiBot/pkg/handler"
+	"MisskeyEmojiBot/pkg/utility"
 )
 
 type uploadHandler struct {
@@ -37,40 +38,39 @@ func (h *uploadHandler) Response(emoji *entity.Emoji, s *discordgo.Session, m *d
 		attachment := m.Attachments[0]
 		ext := filepath.Ext(attachment.Filename)
 		if !entity.IsValidEmojiFile(attachment.Filename) {
-			s.ChannelMessageSend(m.ChannelID, "画像ファイルを添付してください。"+
+			_, _ = s.ChannelMessageSend(m.ChannelID, "画像ファイルを添付してください。"+
 				"対応ファイルは`.png`,`.jpg`,`.jpeg`,`.gif`です。")
 			return response, nil
 		}
 		emoji.FilePath = filepath.Join(h.config.SavePath, emoji.ID+ext)
 		err := utility.EmojiDownload(attachment.URL, emoji.FilePath)
 		if err != nil {
-			s.ChannelMessageSend(m.ChannelID, ": Error! \n"+
+			_, _ = s.ChannelMessageSend(m.ChannelID, ": Error! \n"+
 				"申請中にエラーが発生しました。URLを確認して再アップロードを行うか、管理者へ問い合わせを行ってください。#01a")
 			return response, nil
 		}
 
 		file, err := os.Open(emoji.FilePath)
 		if err != nil {
-			s.ChannelMessageSend(m.ChannelID, ": Error! \n"+
+			_, _ = s.ChannelMessageSend(m.ChannelID, ": Error! \n"+
 				"申請中にエラーが発生しました。管理者へ問い合わせを行ってください。#01b")
 			return response, nil
 		}
-		defer file.Close()
+		defer func() { _ = file.Close() }()
 
 		_, err = s.ChannelFileSend(m.ChannelID, emoji.FilePath, file)
 		if err != nil {
-			s.ChannelMessageSend(m.ChannelID, ": Error! \n"+
+			_, _ = s.ChannelMessageSend(m.ChannelID, ": Error! \n"+
 				"申請中にエラーが発生しました。管理者へ問い合わせを行ってください。#01d")
 			return response, nil
 		}
 
 		response.IsSuccess = true
 
-		s.ChannelMessageSend(m.ChannelID, "# ----------\n")
+		_, _ = s.ChannelMessageSend(m.ChannelID, "# ----------\n")
 
 		return response, nil
-	} else {
-		s.ChannelMessageSend(m.ChannelID, ": ファイルの添付を行ってください。対応ファイルは`.png`,`.jpg`,`.jpeg`,`.gif`です。")
 	}
+	_, _ = s.ChannelMessageSend(m.ChannelID, ": ファイルの添付を行ってください。対応ファイルは`.png`,`.jpg`,`.jpeg`,`.gif`です。")
 	return response, nil
 }

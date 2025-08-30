@@ -12,12 +12,13 @@ func EmojiDownload(url string, filePath string) error {
 	if err != nil {
 		return err
 	}
-
-	defer response.Body.Close()
+	defer func() { _ = response.Body.Close() }()
 
 	dirPath := filepath.Dir(filePath)
 	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
-		os.MkdirAll(dirPath, os.ModePerm)
+		if err := os.MkdirAll(dirPath, os.ModePerm); err != nil {
+			return err
+		}
 	}
 
 	file, err := os.Create(filePath)
@@ -25,7 +26,7 @@ func EmojiDownload(url string, filePath string) error {
 		return err
 	}
 
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	_, err = io.Copy(file, response.Body)
 	if err != nil {

@@ -1,9 +1,9 @@
 package emoji
 
 import (
-	"MisskeyEmojiBot/pkg/entity"
-
 	"github.com/bwmarrin/discordgo"
+
+	"MisskeyEmojiBot/pkg/entity"
 )
 
 type EmojiProcessHandler interface {
@@ -14,17 +14,7 @@ type EmojiProcessHandler interface {
 // type RequestProcessor func(*entity.Emoji, *discordgo.Session, string) Response
 // type ResponceProcessor func(*entity.Emoji, *discordgo.Session, *discordgo.MessageCreate) Response
 
-var workflow = map[int]string{
-	0: "Default",
-	2: "SetName",
-	1: "Upload",
-	3: "Category",
-	4: "Tag",
-	5: "License",
-	6: "Other",
-	7: "Nsfw",
-	8: "Check",
-}
+// Note: workflow map is defined and used in the handler package version.
 
 type EmojiRequestHandler interface {
 }

@@ -1,14 +1,15 @@
 package bot
 
 import (
-	"MisskeyEmojiBot/pkg/container"
-	"MisskeyEmojiBot/pkg/errors"
 	"fmt"
 	"os"
 	"os/signal"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+
+	"MisskeyEmojiBot/pkg/container"
+	"MisskeyEmojiBot/pkg/errors"
 )
 
 type Bot struct {
@@ -29,7 +30,7 @@ func (b *Bot) Run() error {
 	if err := b.container.Session.Open(); err != nil {
 		return errors.Discord("failed to open Discord connection", err)
 	}
-	defer b.container.Session.Close()
+	defer func() { _ = b.container.Session.Close() }()
 
 	b.startJobs()
 
@@ -78,7 +79,7 @@ func (b *Bot) setupHandlers() error {
 			return
 		}
 
-		b.container.EmojiRequestHandler.Process(emoji, s, m)
+		_ = b.container.EmojiRequestHandler.Process(emoji, s, m)
 	})
 
 	// Emoji moderation reaction handler

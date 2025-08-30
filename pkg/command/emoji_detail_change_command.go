@@ -1,12 +1,13 @@
 package command
 
 import (
-	"MisskeyEmojiBot/pkg/config"
-	"MisskeyEmojiBot/pkg/handler"
-	"MisskeyEmojiBot/pkg/repository"
 	"strconv"
 
 	"github.com/bwmarrin/discordgo"
+
+	"MisskeyEmojiBot/pkg/config"
+	"MisskeyEmojiBot/pkg/handler"
+	"MisskeyEmojiBot/pkg/repository"
 )
 
 type EmojiDetailChangeCommand interface {
@@ -46,14 +47,14 @@ func (c *emojiDetailChangeCommand) GetCommand() *discordgo.ApplicationCommand {
 
 func (c *emojiDetailChangeCommand) Execute(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if !c.discordRepo.HasRole(c.config.GuildID, *i.Member.User, c.config.ModeratorID) {
-		c.discordRepo.ReturnFailedMessage(i, "No permission.")
+		_ = c.discordRepo.ReturnFailedMessage(i, "No permission.")
 		return
 	}
 
 	channel, _ := s.Channel(i.ChannelID)
 	emoji, err := c.emojiRepository.GetEmoji(channel.Name)
 	if err != nil {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Flags:   discordgo.MessageFlagsEphemeral,
@@ -64,7 +65,7 @@ func (c *emojiDetailChangeCommand) Execute(s *discordgo.Session, i *discordgo.In
 
 	options := i.ApplicationCommandData().Options
 	if len(options) < 2 {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Flags:   discordgo.MessageFlagsEphemeral,
@@ -89,7 +90,7 @@ func (c *emojiDetailChangeCommand) Execute(s *discordgo.Session, i *discordgo.In
 	case "other":
 		emoji.Other = value
 	default:
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Flags:   discordgo.MessageFlagsEphemeral,
@@ -102,7 +103,7 @@ func (c *emojiDetailChangeCommand) Execute(s *discordgo.Session, i *discordgo.In
 	// Save changes to database
 	err = c.emojiRepository.Save(emoji)
 	if err != nil {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Flags:   discordgo.MessageFlagsEphemeral,
@@ -112,7 +113,7 @@ func (c *emojiDetailChangeCommand) Execute(s *discordgo.Session, i *discordgo.In
 		return
 	}
 
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Flags:   discordgo.MessageFlagsEphemeral,
@@ -120,8 +121,8 @@ func (c *emojiDetailChangeCommand) Execute(s *discordgo.Session, i *discordgo.In
 		},
 	})
 
-	s.ChannelMessageSend(channel.ID, "# 変更後の絵文字\n")
-	s.ChannelMessageSend(channel.ID,
+	_, _ = s.ChannelMessageSend(channel.ID, "# 変更後の絵文字\n")
+	_, _ = s.ChannelMessageSend(channel.ID,
 		"- Name    : **"+emoji.Name+"**\n"+
 			"- Category: **"+emoji.Category+"**\n"+
 			"- Tag     : **"+emoji.Tag+"**\n"+

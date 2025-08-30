@@ -1,11 +1,12 @@
 package processor
 
 import (
-	"MisskeyEmojiBot/pkg/entity"
-	"MisskeyEmojiBot/pkg/handler"
 	"strconv"
 
 	"github.com/bwmarrin/discordgo"
+
+	"MisskeyEmojiBot/pkg/entity"
+	"MisskeyEmojiBot/pkg/handler"
 )
 
 type confirmHandler struct {
@@ -20,8 +21,8 @@ func (h *confirmHandler) Request(emoji *entity.Emoji, s *discordgo.Session, cID 
 		IsSuccess: true,
 	}
 
-	s.ChannelMessageSend(cID, "# ----------\n")
-	s.ChannelMessageSend(cID, "## 最終確認を行います。\n"+
+	_, _ = s.ChannelMessageSend(cID, "# ----------\n")
+	_, _ = s.ChannelMessageSend(cID, "## 最終確認を行います。\n"+
 		"- 名前 / Name: **"+emoji.Name+"**\n"+
 		"- カテゴリ / Category: **"+emoji.Category+"**\n"+
 		"- タグ / Tag: **"+emoji.Tag+"**\n"+
