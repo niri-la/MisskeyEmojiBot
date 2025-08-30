@@ -22,6 +22,16 @@ type Config struct {
 	SavePath              string
 	DatabasePath          string
 	IsDebug               bool
+
+	// S3 Configuration
+	AWSAccessKeyID       string
+	AWSSecretAccessKey   string
+	AWSRegion            string
+	S3Bucket             string
+	S3Endpoint           string
+	S3ForcePathStyle     bool
+	UseS3                bool
+	EnableDatabaseBackup bool
 }
 
 func LoadConfig() (*Config, error) {
@@ -30,9 +40,24 @@ func LoadConfig() (*Config, error) {
 		return nil, errors.Config("failed to load settings.env", err)
 	}
 
-	isDebug, err := strconv.ParseBool(os.Getenv("is_debug"))
+	isDebug, err := strconv.ParseBool(os.Getenv("debug"))
 	if err != nil {
 		isDebug = false
+	}
+
+	useS3, err := strconv.ParseBool(os.Getenv("use_s3"))
+	if err != nil {
+		useS3 = false
+	}
+
+	s3ForcePathStyle, err := strconv.ParseBool(os.Getenv("s3_force_path_style"))
+	if err != nil {
+		s3ForcePathStyle = false
+	}
+
+	enableDatabaseBackup, err := strconv.ParseBool(os.Getenv("enable_database_backup"))
+	if err != nil {
+		enableDatabaseBackup = false
 	}
 
 	config := &Config{
@@ -47,6 +72,16 @@ func LoadConfig() (*Config, error) {
 		SavePath:              strings.TrimSpace(os.Getenv("save_path")),
 		DatabasePath:          strings.TrimSpace(os.Getenv("database_path")),
 		IsDebug:               isDebug,
+
+		// S3 Configuration
+		AWSAccessKeyID:       strings.TrimSpace(os.Getenv("aws_access_key_id")),
+		AWSSecretAccessKey:   strings.TrimSpace(os.Getenv("aws_secret_access_key")),
+		AWSRegion:            strings.TrimSpace(os.Getenv("aws_region")),
+		S3Bucket:             strings.TrimSpace(os.Getenv("s3_bucket")),
+		S3Endpoint:           strings.TrimSpace(os.Getenv("s3_endpoint")),
+		S3ForcePathStyle:     s3ForcePathStyle,
+		UseS3:                useS3,
+		EnableDatabaseBackup: enableDatabaseBackup,
 	}
 
 	// Set default values

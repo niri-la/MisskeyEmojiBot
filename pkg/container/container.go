@@ -33,8 +33,9 @@ type Container struct {
 	ComponentHandler        handler.ComponentHandler
 
 	// Jobs
-	ChannelDeleteJob   job.Job
-	EmojiUpdateInfoJob job.Job
+	ChannelDeleteJob     job.Job
+	EmojiUpdateInfoJob   job.Job
+	DatabaseBackupJob    job.DatabaseBackupJob
 
 	// Discord Session
 	Session *discordgo.Session
@@ -85,6 +86,10 @@ func NewContainer(cfg *config.Config) (*Container, error) {
 	// Initialize jobs
 	channelDeleteJob := job.NewChannelDeleteJob(emojiRepo, discordRepo)
 	emojiUpdateInfoJob := job.NewEmojiUpdateInfoJob(emojiRepo, misskeyRepo)
+	databaseBackupJob, err := job.NewDatabaseBackupJob(cfg)
+	if err != nil {
+		return nil, errors.Config("failed to initialize database backup job", err)
+	}
 
 	container := &Container{
 		Config:                  cfg,
@@ -98,6 +103,7 @@ func NewContainer(cfg *config.Config) (*Container, error) {
 		ComponentHandler:        componentHandler,
 		ChannelDeleteJob:        channelDeleteJob,
 		EmojiUpdateInfoJob:      emojiUpdateInfoJob,
+		DatabaseBackupJob:       databaseBackupJob,
 		Session:                 session,
 		Version:                 string(version),
 	}
