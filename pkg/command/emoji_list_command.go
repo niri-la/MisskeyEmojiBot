@@ -239,7 +239,6 @@ func (c *emojiListCommand) showEmojiDetail(s *discordgo.Session, i *discordgo.In
 	}
 
 	content.WriteString(fmt.Sprintf("**NSFW:** %s\n", map[bool]string{true: "はい", false: "いいえ"}[emoji.IsSensitive]))
-	content.WriteString(fmt.Sprintf("**上書き:** %s\n", map[bool]string{true: "はい", false: "いいえ"}[emoji.IsOverwrite]))
 
 	// ステータス情報
 	content.WriteString("\n## 📊 ステータス情報\n")

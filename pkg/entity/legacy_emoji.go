@@ -44,7 +44,6 @@ func (le *LegacyEmoji) ToCurrentEmoji() *Emoji {
 		IsRequested:         le.IsRequested,
 		IsAccepted:          le.IsAccepted,
 		IsFinish:            le.IsFinish,
-		IsOverwrite:         false, // 新フィールドはデフォルトfalse
 		ApproveCount:        le.ApproveCount,
 		DisapproveCount:     le.DisapproveCount,
 		ResponseFlag:        le.ResponseState, // フィールド名の違いに注意

@@ -132,7 +132,6 @@ func (c *Container) registerComponents() {
 	_ = c.ComponentHandler.AddComponent(component.NewInitComponent(*c.Config, c.DiscordRepository))
 	_ = c.ComponentHandler.AddComponent(component.NewNsfwActiveComponent(c.EmojiRequestHandler, c.EmojiRepository, c.DiscordRepository))
 	_ = c.ComponentHandler.AddComponent(component.NewNsfwInactiveComponent(c.EmojiRequestHandler, c.EmojiRepository, c.DiscordRepository))
-	_ = c.ComponentHandler.AddComponent(component.NewEmojiOverwriteConfirmComponent(*c.Config, c.EmojiRepository, c.DiscordRepository))
 }
 
 func (c *Container) registerProcessors() {
