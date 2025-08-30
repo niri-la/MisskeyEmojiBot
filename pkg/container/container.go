@@ -14,6 +14,7 @@ import (
 	"MisskeyEmojiBot/pkg/handler/emoji"
 	"MisskeyEmojiBot/pkg/handler/processor"
 	"MisskeyEmojiBot/pkg/job"
+	"MisskeyEmojiBot/pkg/migration"
 	"MisskeyEmojiBot/pkg/repository"
 )
 
@@ -73,6 +74,12 @@ func NewContainer(cfg *config.Config) (*Container, error) {
 	misskeyRepo, err := repository.NewMisskeyRepository(cfg.MisskeyToken, cfg.MisskeyHost)
 	if err != nil {
 		return nil, errors.Misskey("failed to initialize Misskey API", err)
+	}
+
+	// Run JSON migration if enabled
+	jsonMigration := migration.NewJsonMigration(cfg, emojiRepo)
+	if err := jsonMigration.Run(); err != nil {
+		return nil, errors.FileOperation("failed to run JSON migration", err)
 	}
 
 	// Initialize handlers

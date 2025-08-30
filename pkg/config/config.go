@@ -22,6 +22,10 @@ type Config struct {
 	SavePath              string
 	DatabasePath          string
 	IsDebug               bool
+
+	// Migration Configuration
+	EnableJsonMigration bool
+	JsonMigrationPath   string
 }
 
 func LoadConfig() (*Config, error) {
@@ -30,9 +34,14 @@ func LoadConfig() (*Config, error) {
 		return nil, errors.Config("failed to load settings.env", err)
 	}
 
-	isDebug, err := strconv.ParseBool(os.Getenv("is_debug"))
+	isDebug, err := strconv.ParseBool(os.Getenv("debug"))
 	if err != nil {
 		isDebug = false
+	}
+
+	enableJsonMigration, err := strconv.ParseBool(os.Getenv("enable_json_migration"))
+	if err != nil {
+		enableJsonMigration = false
 	}
 
 	config := &Config{
@@ -47,11 +56,19 @@ func LoadConfig() (*Config, error) {
 		SavePath:              strings.TrimSpace(os.Getenv("save_path")),
 		DatabasePath:          strings.TrimSpace(os.Getenv("database_path")),
 		IsDebug:               isDebug,
+
+		// Migration Configuration
+		EnableJsonMigration: enableJsonMigration,
+		JsonMigrationPath:   strings.TrimSpace(os.Getenv("json_migration_path")),
 	}
 
 	// Set default values
 	if config.DatabasePath == "" {
 		config.DatabasePath = "./emoji_bot.db"
+	}
+
+	if config.JsonMigrationPath == "" {
+		config.JsonMigrationPath = "./saved/"
 	}
 
 	if err := config.Validate(); err != nil {
