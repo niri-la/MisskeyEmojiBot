@@ -79,6 +79,12 @@ func (b *Bot) setupHandlers() error {
 			return
 		}
 
+		// Issue #96: 絵文字申請を開始した本人以外の応答は受け取らないように
+		if emoji.RequestUser != m.Author.ID {
+			_, _ = s.ChannelMessageSend(m.ChannelID, "⚠️ この申請チャンネルでは、申請者本人（<@"+emoji.RequestUser+">）のみが応答できます。")
+			return
+		}
+
 		_ = b.container.EmojiRequestHandler.Process(emoji, s, m)
 	})
 
@@ -91,4 +97,9 @@ func (b *Bot) setupHandlers() error {
 func (b *Bot) startJobs() {
 	b.container.ChannelDeleteJob.Run()
 	b.container.EmojiUpdateInfoJob.Run()
+	
+	// データベースバックアップJob（設定で有効化されている場合のみ）
+	if err := b.container.DatabaseBackupJob.Run(); err != nil {
+		fmt.Printf("Database backup failed: %v\n", err)
+	}
 }
