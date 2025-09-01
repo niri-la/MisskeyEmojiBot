@@ -26,9 +26,9 @@ type Emoji struct {
 	FilePath    string `json:"filepath"`
 	IsSensitive bool   `gorm:"default:false" json:"isSensitive"`
 
-	IsRequested bool `gorm:"default:false" json:"isRequested"`
-	IsAccepted  bool `gorm:"default:false" json:"isAccepted"`
-	IsFinish    bool `gorm:"default:false" json:"isFinish"`
+	IsRequested bool `gorm:"default:false;index:idx_finish_status" json:"isRequested"`
+	IsAccepted  bool `gorm:"default:false;index:idx_finish_status,idx_finish_accepted" json:"isAccepted"`
+	IsFinish    bool `gorm:"default:false;index:idx_finish_status,idx_finish_accepted" json:"isFinish"`
 
 	ApproveCount    int `gorm:"default:0" json:"approveCount"`
 	DisapproveCount int `gorm:"default:0" json:"disapproveCount"`
@@ -37,7 +37,7 @@ type Emoji struct {
 	NowStateIndex       int       `gorm:"default:0" json:"nowStateIndex"`
 	ModerationMessageID string    `json:"moderationMessageID"`
 	UserThreadID        string    `json:"userThreadID"`
-	StartAt             time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"startAt"`
+	StartAt             time.Time `gorm:"default:CURRENT_TIMESTAMP;index:idx_start_at" json:"startAt"`
 
 	// GORM timestamps
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"createdAt"`
