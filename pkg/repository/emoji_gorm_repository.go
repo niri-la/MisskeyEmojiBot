@@ -80,12 +80,9 @@ func (r *emojiGormRepository) GetEmoji(id string) (*entity.Emoji, error) {
 }
 
 func (r *emojiGormRepository) EmojiReconstruction() []entity.Emoji {
-	// Get all accepted emojis that are finished
+	// Get all accepted emojis that are finished but not yet notified
 	var acceptedEmojis []entity.Emoji
-	r.db.Where("is_finish = ? AND is_accepted = ?", true, true).Find(&acceptedEmojis)
-
-	// Delete finished emojis from database
-	// r.db.Where("is_finish = ?", true).Delete(&entity.Emoji{})
+	r.db.Where("is_finish = ? AND is_accepted = ? AND is_notified = ?", true, true, false).Find(&acceptedEmojis)
 
 	return acceptedEmojis
 }
