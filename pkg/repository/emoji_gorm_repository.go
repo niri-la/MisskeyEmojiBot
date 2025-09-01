@@ -57,6 +57,19 @@ func (r *emojiGormRepository) GetEmojis() []entity.Emoji {
 	return emojis
 }
 
+func (r *emojiGormRepository) GetEmojisForList(limit int) []entity.Emoji {
+	var emojis []entity.Emoji
+	query := r.db.Order("start_at DESC")
+	if limit > 0 {
+		query = query.Limit(limit)
+	}
+	result := query.Find(&emojis)
+	if result.Error != nil {
+		return []entity.Emoji{}
+	}
+	return emojis
+}
+
 func (r *emojiGormRepository) GetEmoji(id string) (*entity.Emoji, error) {
 	var emoji entity.Emoji
 	result := r.db.First(&emoji, "id = ?", id)

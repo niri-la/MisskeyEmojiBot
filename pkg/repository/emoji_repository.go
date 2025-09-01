@@ -15,6 +15,7 @@ import (
 type EmojiRepository interface {
 	NewEmoji(user string) *entity.Emoji
 	GetEmojis() []entity.Emoji
+	GetEmojisForList(limit int) []entity.Emoji
 	GetEmoji(id string) (*entity.Emoji, error)
 	EmojiReconstruction() []entity.Emoji
 	Approve(emoji *entity.Emoji) error
@@ -48,6 +49,14 @@ func (r *emojiRepository) NewEmoji(user string) *entity.Emoji {
 
 func (r *emojiRepository) GetEmojis() []entity.Emoji {
 	return r.emojiProcessList
+}
+
+func (r *emojiRepository) GetEmojisForList(limit int) []entity.Emoji {
+	emojis := r.emojiProcessList
+	if limit > 0 && limit < len(emojis) {
+		return emojis[:limit]
+	}
+	return emojis
 }
 
 func (r *emojiRepository) GetEmoji(id string) (*entity.Emoji, error) {
