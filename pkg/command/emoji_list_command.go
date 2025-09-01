@@ -61,6 +61,12 @@ func (c *emojiListCommand) GetCommand() *discordgo.ApplicationCommand {
 					},
 				},
 			},
+			{
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				Name:        "head",
+				Description: "表示する件数（デフォルト: 5）",
+				Required:    false,
+			},
 		},
 	}
 }
@@ -68,6 +74,7 @@ func (c *emojiListCommand) GetCommand() *discordgo.ApplicationCommand {
 func (c *emojiListCommand) Execute(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	var emojiID string
 	filter := "all"
+	headCount := 5 // デフォルト値
 
 	// オプションを解析
 	for _, option := range i.ApplicationCommandData().Options {
@@ -76,6 +83,8 @@ func (c *emojiListCommand) Execute(s *discordgo.Session, i *discordgo.Interactio
 			emojiID = option.StringValue()
 		case "filter":
 			filter = option.StringValue()
+		case "head":
+			headCount = int(option.IntValue())
 		}
 	}
 
@@ -85,7 +94,7 @@ func (c *emojiListCommand) Execute(s *discordgo.Session, i *discordgo.Interactio
 		return
 	}
 
-	emojis := c.emojiRepository.GetEmojis()
+	emojis := c.emojiRepository.GetEmojisForList(headCount * 4)
 
 	var requestedEmojis []string
 	var pendingEmojis []string
@@ -114,12 +123,26 @@ func (c *emojiListCommand) Execute(s *discordgo.Session, i *discordgo.Interactio
 	var content strings.Builder
 	content.WriteString("# 絵文字申請状況\n\n")
 
+	// headオプションによる件数制限関数
+	limitSlice := func(slice []string, limit int) []string {
+		if limit > 0 && limit < len(slice) {
+			return slice[:limit]
+		}
+		return slice
+	}
+
 	// フィルターに応じて表示内容を変更
 	switch filter {
 	case "before_request":
 		if len(requestedEmojis) > 0 {
-			content.WriteString("## 🔄 申請前 (" + strconv.Itoa(len(requestedEmojis)) + "件)\n")
-			for _, emoji := range requestedEmojis {
+			displayEmojis := limitSlice(requestedEmojis, headCount)
+			totalCount := len(requestedEmojis)
+			content.WriteString("## 🔄 申請前 (" + strconv.Itoa(totalCount) + "件")
+			if len(displayEmojis) < totalCount {
+				content.WriteString(", " + strconv.Itoa(len(displayEmojis)) + "件表示")
+			}
+			content.WriteString(")\n")
+			for _, emoji := range displayEmojis {
 				content.WriteString("- " + emoji + "\n")
 			}
 		} else {
@@ -127,8 +150,14 @@ func (c *emojiListCommand) Execute(s *discordgo.Session, i *discordgo.Interactio
 		}
 	case "pending":
 		if len(pendingEmojis) > 0 {
-			content.WriteString("## ⏳ 審査中 (" + strconv.Itoa(len(pendingEmojis)) + "件)\n")
-			for _, emoji := range pendingEmojis {
+			displayEmojis := limitSlice(pendingEmojis, headCount)
+			totalCount := len(pendingEmojis)
+			content.WriteString("## ⏳ 審査中 (" + strconv.Itoa(totalCount) + "件")
+			if len(displayEmojis) < totalCount {
+				content.WriteString(", " + strconv.Itoa(len(displayEmojis)) + "件表示")
+			}
+			content.WriteString(")\n")
+			for _, emoji := range displayEmojis {
 				content.WriteString("- " + emoji + "\n")
 			}
 		} else {
@@ -136,8 +165,14 @@ func (c *emojiListCommand) Execute(s *discordgo.Session, i *discordgo.Interactio
 		}
 	case "approved":
 		if len(approvedEmojis) > 0 {
-			content.WriteString("## ✅ 承認済み (" + strconv.Itoa(len(approvedEmojis)) + "件)\n")
-			for _, emoji := range approvedEmojis {
+			displayEmojis := limitSlice(approvedEmojis, headCount)
+			totalCount := len(approvedEmojis)
+			content.WriteString("## ✅ 承認済み (" + strconv.Itoa(totalCount) + "件")
+			if len(displayEmojis) < totalCount {
+				content.WriteString(", " + strconv.Itoa(len(displayEmojis)) + "件表示")
+			}
+			content.WriteString(")\n")
+			for _, emoji := range displayEmojis {
 				content.WriteString("- " + emoji + "\n")
 			}
 		} else {
@@ -145,8 +180,14 @@ func (c *emojiListCommand) Execute(s *discordgo.Session, i *discordgo.Interactio
 		}
 	case "rejected":
 		if len(rejectedEmojis) > 0 {
-			content.WriteString("## ❌ 却下済み (" + strconv.Itoa(len(rejectedEmojis)) + "件)\n")
-			for _, emoji := range rejectedEmojis {
+			displayEmojis := limitSlice(rejectedEmojis, headCount)
+			totalCount := len(rejectedEmojis)
+			content.WriteString("## ❌ 却下済み (" + strconv.Itoa(totalCount) + "件")
+			if len(displayEmojis) < totalCount {
+				content.WriteString(", " + strconv.Itoa(len(displayEmojis)) + "件表示")
+			}
+			content.WriteString(")\n")
+			for _, emoji := range displayEmojis {
 				content.WriteString("- " + emoji + "\n")
 			}
 		} else {
@@ -154,32 +195,56 @@ func (c *emojiListCommand) Execute(s *discordgo.Session, i *discordgo.Interactio
 		}
 	default: // "all"
 		if len(requestedEmojis) > 0 {
-			content.WriteString("## 🔄 申請前 (" + strconv.Itoa(len(requestedEmojis)) + "件)\n")
-			for _, emoji := range requestedEmojis {
+			displayEmojis := limitSlice(requestedEmojis, headCount)
+			totalCount := len(requestedEmojis)
+			content.WriteString("## 🔄 申請前 (" + strconv.Itoa(totalCount) + "件")
+			if len(displayEmojis) < totalCount {
+				content.WriteString(", " + strconv.Itoa(len(displayEmojis)) + "件表示")
+			}
+			content.WriteString(")\n")
+			for _, emoji := range displayEmojis {
 				content.WriteString("- " + emoji + "\n")
 			}
 			content.WriteString("\n")
 		}
 
 		if len(pendingEmojis) > 0 {
-			content.WriteString("## ⏳ 審査中 (" + strconv.Itoa(len(pendingEmojis)) + "件)\n")
-			for _, emoji := range pendingEmojis {
+			displayEmojis := limitSlice(pendingEmojis, headCount)
+			totalCount := len(pendingEmojis)
+			content.WriteString("## ⏳ 審査中 (" + strconv.Itoa(totalCount) + "件")
+			if len(displayEmojis) < totalCount {
+				content.WriteString(", " + strconv.Itoa(len(displayEmojis)) + "件表示")
+			}
+			content.WriteString(")\n")
+			for _, emoji := range displayEmojis {
 				content.WriteString("- " + emoji + "\n")
 			}
 			content.WriteString("\n")
 		}
 
 		if len(approvedEmojis) > 0 {
-			content.WriteString("## ✅ 承認済み (" + strconv.Itoa(len(approvedEmojis)) + "件)\n")
-			for _, emoji := range approvedEmojis {
+			displayEmojis := limitSlice(approvedEmojis, headCount)
+			totalCount := len(approvedEmojis)
+			content.WriteString("## ✅ 承認済み (" + strconv.Itoa(totalCount) + "件")
+			if len(displayEmojis) < totalCount {
+				content.WriteString(", " + strconv.Itoa(len(displayEmojis)) + "件表示")
+			}
+			content.WriteString(")\n")
+			for _, emoji := range displayEmojis {
 				content.WriteString("- " + emoji + "\n")
 			}
 			content.WriteString("\n")
 		}
 
 		if len(rejectedEmojis) > 0 {
-			content.WriteString("## ❌ 却下済み (" + strconv.Itoa(len(rejectedEmojis)) + "件)\n")
-			for _, emoji := range rejectedEmojis {
+			displayEmojis := limitSlice(rejectedEmojis, headCount)
+			totalCount := len(rejectedEmojis)
+			content.WriteString("## ❌ 却下済み (" + strconv.Itoa(totalCount) + "件")
+			if len(displayEmojis) < totalCount {
+				content.WriteString(", " + strconv.Itoa(len(displayEmojis)) + "件表示")
+			}
+			content.WriteString(")\n")
+			for _, emoji := range displayEmojis {
 				content.WriteString("- " + emoji + "\n")
 			}
 			content.WriteString("\n")
