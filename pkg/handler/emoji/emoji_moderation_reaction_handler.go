@@ -6,7 +6,6 @@ import (
 	"github.com/bwmarrin/discordgo"
 
 	"MisskeyEmojiBot/pkg/config"
-	"MisskeyEmojiBot/pkg/entity"
 	"MisskeyEmojiBot/pkg/repository"
 )
 
@@ -31,23 +30,7 @@ func (h *emojiModerationReactionHandler) HandleEmojiModerationReaction(s *discor
 	}
 
 	channel, _ := s.Channel(m.ChannelID)
-	var emoji *entity.Emoji
-	found := false
-
-	for _, e := range h.emojiRepository.GetEmojis() {
-		if channel.Name == e.ID {
-			emoji = &e
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		return
-	}
-
-	emoji, err := h.emojiRepository.GetEmoji(emoji.ID)
-
+	emoji, err := h.emojiRepository.GetEmoji(channel.Name)
 	if err != nil {
 		return
 	}

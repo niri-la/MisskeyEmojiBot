@@ -27,17 +27,29 @@ func (j *emojiUpdateInfoJob) Run() {
 			if len(emojiArray) != 0 {
 				var builder strings.Builder
 				for _, emoji := range emojiArray {
-					builder.WriteString(":" + emoji.Name + ":")
+					if emoji.IsAccepted {
+						builder.WriteString(":" + emoji.Name + ":")
+					}
 				}
 
-				message := j.misskeyRepo.NewString("#にりらみすきー部 \n絵文字が追加されました\n" +
-					builder.String())
+				if builder.Len() > 0 {
+					message := j.misskeyRepo.NewString("#にりらみすきー部 \n絵文字が追加されました\n" +
+						builder.String())
 
-				_ = j.misskeyRepo.Note(notes.CreateRequest{
-					Visibility: models.VisibilityPublic,
-					Text:       message,
-					LocalOnly:  true,
-				})
+					_ = j.misskeyRepo.Note(notes.CreateRequest{
+						Visibility: models.VisibilityPublic,
+						Text:       message,
+						LocalOnly:  true,
+					})
+
+					// Mark emojis as notified
+					for _, emoji := range emojiArray {
+						if emoji.IsAccepted {
+							emoji.IsNotified = true
+							_ = j.emojiRepository.Save(&emoji)
+						}
+					}
+				}
 			}
 		}
 	}()
