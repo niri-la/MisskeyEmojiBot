@@ -29,6 +29,7 @@ type Emoji struct {
 	IsRequested bool `gorm:"default:false;index:idx_finish_status" json:"isRequested"`
 	IsAccepted  bool `gorm:"default:false;index:idx_finish_status,idx_finish_accepted" json:"isAccepted"`
 	IsFinish    bool `gorm:"default:false;index:idx_finish_status,idx_finish_accepted" json:"isFinish"`
+	IsNotified  bool `gorm:"default:false;index:idx_notification" json:"isNotified"`
 
 	ApproveCount    int `gorm:"default:0" json:"approveCount"`
 	DisapproveCount int `gorm:"default:0" json:"disapproveCount"`
